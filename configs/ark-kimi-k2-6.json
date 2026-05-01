@@ -1,0 +1,23 @@
+{
+  "api": {
+    "base_url": "https://ark.cn-beijing.volces.com/api/coding/v3",
+    "api_key_env": "ARK_API_KEY",
+    "model": "kimi-k2.6"
+  },
+  "benchmark": {
+    "runs_per_scenario": 1,
+    "timeout_seconds": 180,
+    "warmup_runs": 0,
+    "stream": true,
+    "results_dir": "results/ark-kimi-k2-6"
+  },
+  "generation": {
+    "temperature": 0.7,
+    "max_tokens": 512
+  },
+  "scenarios": [
+    "short_chat",
+    "long_generation",
+    "multi_turn"
+  ]
+}

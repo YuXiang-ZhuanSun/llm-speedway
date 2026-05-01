@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-speedway"
+version = "0.1.0"
+description = "Beautiful, reproducible latency reports for OpenAI-compatible LLM APIs."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+  { name = "llm-speedway contributors" }
+]
+keywords = ["llm", "benchmark", "latency", "ttft", "openai-compatible", "agents"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Testing",
+  "Topic :: System :: Benchmark"
+]
+
+[project.scripts]
+llm-speedway = "llm_latency_benchmark.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["llm_latency_benchmark*", "llm_speedway*"]
+

@@ -130,20 +130,28 @@ llm-speedway run --config config.json --scenario short_chat --runs 3
 
 ## 技术架构
 
-```mermaid
-flowchart LR
-  CLI["CLI\nllm-speedway run"] --> Config["Config\n模型、接口、运行次数"]
-  Config --> Runner["Runner\n编排 benchmark"]
-  Scenarios["Scenarios\n短对话、长输出、多轮"] --> Runner
-  Runner --> Provider["Provider adapter\nOpenAI-compatible streaming"]
-  Provider --> API["LLM API\nDeepSeek、Ark 等"]
-  API --> Stream["Streaming events\nchunk、finish reason、usage"]
-  Stream --> Metrics["Metrics core\n首 token、任务耗时、生成速度"]
-  Metrics --> Reports["Reports\nMarkdown、CSV、JSONL"]
-  Reports --> Decision["Decision\n哪个模型足够快"]
-```
+`llm-speedway` 只有一条主链路：**定义测试，调用模型，测量流式响应，写出报告。**
 
-运行链路很直接：配置和场景进入 runner；provider adapter 调用 API；streaming 事件进入指标层；报告把指标变成模型选择依据。
+| 阶段 | 模块 | 职责 |
+|---|---|---|
+| 1. Define | `configs/` + `scenarios/` | 选择模型、接口、运行次数和 prompt 形态 |
+| 2. Run | `runner.py` | 执行每个场景，保留请求级记录 |
+| 3. Call | `providers/` | 调用 OpenAI-compatible streaming API |
+| 4. Measure | `core/metrics.py` | 把流式事件转成首 token、任务耗时、生成速度 |
+| 5. Report | `reports/` + `results/` | 输出 Markdown、CSV、JSONL |
+
+```text
+config + scenario
+      |
+      v
+runner -> provider -> LLM API -> stream events
+      |                              |
+      v                              v
+raw records --------------------> metrics
+                                     |
+                                     v
+                         report.md / summary.csv / raw_results.jsonl
+```
 
 代码目录也按同样的边界组织：
 

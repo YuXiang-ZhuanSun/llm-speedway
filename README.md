@@ -130,20 +130,28 @@ These are first-pass reports, not statistical claims. Increase `runs_per_scenari
 
 ## Architecture
 
-```mermaid
-flowchart LR
-  CLI["CLI\nllm-speedway run"] --> Config["Config\nmodel, endpoint, runs"]
-  Config --> Runner["Runner\norchestrates benchmark"]
-  Scenarios["Scenarios\nshort chat, long generation, multi-turn"] --> Runner
-  Runner --> Provider["Provider adapter\nOpenAI-compatible streaming"]
-  Provider --> API["LLM API\nDeepSeek, Ark, etc."]
-  API --> Stream["Streaming events\nchunks, finish reason, usage"]
-  Stream --> Metrics["Metrics core\nfirst token, task time, output speed"]
-  Metrics --> Reports["Reports\nMarkdown, CSV, JSONL"]
-  Reports --> Decision["Decision\nwhich model feels fast enough?"]
-```
+`llm-speedway` has one pipeline: **define the run, call the model, measure the stream, write the report.**
 
-The runtime path is simple: config and scenarios feed the runner; the provider adapter talks to the API; streaming events become metrics; reports turn those metrics into a model choice.
+| Stage | Module | Job |
+|---|---|---|
+| 1. Define | `configs/` + `scenarios/` | Choose model, endpoint, runs, and prompt shape |
+| 2. Run | `runner.py` | Execute each scenario and preserve request-level records |
+| 3. Call | `providers/` | Talk to OpenAI-compatible streaming APIs |
+| 4. Measure | `core/metrics.py` | Convert stream events into first token, task time, output speed |
+| 5. Report | `reports/` + `results/` | Produce Markdown, CSV, and JSONL artifacts |
+
+```text
+config + scenario
+      |
+      v
+runner -> provider -> LLM API -> stream events
+      |                              |
+      v                              v
+raw records --------------------> metrics
+                                     |
+                                     v
+                         report.md / summary.csv / raw_results.jsonl
+```
 
 The code layout follows the same boundaries:
 

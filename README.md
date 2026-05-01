@@ -33,29 +33,23 @@ It sends controlled prompts, listens to streaming responses, captures first-toke
 ```text
 results/<model>/
   report.md          # human report
-  summary.csv        # three headline metrics
+  summary.csv        # three speed signals
   raw_results.jsonl  # full request-level data
 ```
 
 Nothing is sent anywhere except the API endpoint you configure.
 
-## Evaluation model
+## Speed signals
 
-`llm-speedway` separates **raw fields** from **headline metrics**. Raw records keep timing details for debugging. The benchmark itself promotes three speed signals.
+`llm-speedway` benchmarks three speed signals. Each signal maps to a real agent UX failure mode.
 
-| Metric | Source | Meaning | Use it for |
+| Signal | Source | Meaning | Use it for |
 |---|---|---|---|
 | **Start latency** | `ttft_ms` | Time until the first visible assistant token arrives | Whether the agent starts talking fast |
 | **Generation speed** | `long_generation.decode_tps` | Tokens per second after the first token on a long answer | Whether the model keeps writing quickly |
 | **Multi-turn speed** | `multi_turn.decode_tps` by round | Generation speed while conversation history accumulates | Whether the model stays fast as context grows |
 
-### About completion time
-
-`total_latency_ms` is still recorded for every request, but it is not a headline benchmark metric.
-
-Completion time changes with answer length, stopping behavior, and provider-side truncation. It is useful for debugging a specific run, but it is too ambiguous to headline as a cross-model speed signal. For sustained output, use **Generation speed**. For context-heavy agents, use **Multi-turn speed**.
-
-That distinction is the point. Agent UX is not one number.
+The raw data still keeps extra timing fields for debugging, but the benchmark story is intentionally these three signals.
 
 ## Scenarios
 
@@ -244,7 +238,7 @@ The report promotes:
 - `long_generation.decode_tps` -> Generation speed
 - `multi_turn.decode_tps` -> Multi-turn speed
 
-`total_latency_ms` remains in raw records for debugging and reproducibility, but it is not one of the headline benchmark metrics.
+`total_latency_ms` remains in raw records for debugging and reproducibility.
 
 If a streamed response contains no visible assistant content, the sample fails. Empty answers do not get pretty numbers.
 

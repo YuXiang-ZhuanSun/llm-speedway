@@ -106,7 +106,7 @@ class Reporter:
                 "- Start latency: user-visible waiting time before the model starts speaking.",
                 "- Generation speed: generated tokens per second after the first token arrives.",
                 "- Multi-turn speed: generation speed measured round by round while previous conversation history accumulates.",
-                "- total_latency_ms is still kept in raw_results.jsonl for debugging, but it is not a headline benchmark metric.",
+                "- Extra timing fields such as total_latency_ms are kept in raw_results.jsonl for debugging.",
             ]
         )
 

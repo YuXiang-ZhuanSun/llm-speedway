@@ -6,7 +6,7 @@ All public reports use the same three benchmark signals:
 - Generation speed: `long_generation.decode_tps`, sustained tokens/s on a long answer.
 - Multi-turn speed: `multi_turn.decode_tps` by round, measured as conversation history accumulates.
 
-`total_latency_ms` is still available in raw JSONL files for debugging, but it is not a headline benchmark metric.
+Extra timing fields such as `total_latency_ms` remain available in raw JSONL files for debugging.
 
 | Model | Start latency | Generation speed | Multi-turn speed | Report |
 |---|---:|---:|---|---|

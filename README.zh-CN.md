@@ -33,29 +33,23 @@ Agent 的慢，往往不是抽象的慢，而是让用户长时间盯着空白�
 ```text
 results/<model>/
   report.md          # 给人看的报告
-  summary.csv        # 三个核心指标
+  summary.csv        # 三个速度信号
   raw_results.jsonl  # 完整请求级数据
 ```
 
 除了你配置的 API endpoint，数据不会发往其他地方。
 
-## 评价模型
+## 速度信号
 
-`llm-speedway` 把**原始字段**和**核心指标**分开。原始记录保留调试需要的时间细节，但 benchmark 对外只提升三个速度信号。
+`llm-speedway` benchmark 三个速度信号。每个信号都对应一个真实的 Agent UX 问题。
 
-| 指标 | 来源 | 含义 | 用来看什么 |
+| 信号 | 来源 | 含义 | 用来看什么 |
 |---|---|---|---|
 | **Start latency** | `ttft_ms` | 第一个可见 assistant token 到达的时间 | Agent 开始说话快不快 |
 | **Generation speed** | `long_generation.decode_tps` | 长回答场景下，首 token 之后的 tokens/s | 模型持续写得快不快 |
 | **Multi-turn speed** | `multi_turn.decode_tps` 按轮次观察 | 上下文累积时的生成速度 | 对话变重后还能不能保持速度 |
 
-### 关于 Completion time
-
-`total_latency_ms` 仍然会记录在每次请求里，但它不是对外主打的 benchmark 指标。
-
-Completion time 会受到回复长度、停止行为、provider 截断策略影响。它适合排查某一次运行，不适合作为跨模型 headline speed signal。想看持续输出，看 **Generation speed**。想看上下文变重后的 Agent 体验，看 **Multi-turn speed**。
-
-这就是项目要讲清楚的事：Agent UX 不是一个数字。
+原始数据仍会保留额外时间字段用于调试，但 benchmark 对外讲的就是这三个速度信号。
 
 ## 测试场景
 
@@ -244,7 +238,7 @@ scenarios/
 - `long_generation.decode_tps` -> Generation speed
 - `multi_turn.decode_tps` -> Multi-turn speed
 
-`total_latency_ms` 仍然保留在原始记录里，用于调试和复现，但它不是 headline benchmark 指标。
+`total_latency_ms` 仍然保留在原始记录里，用于调试和复现。
 
 如果 streaming 响应没有任何可见 assistant 内容，这个样本会失败。空回答不应该拥有漂亮数字。
 

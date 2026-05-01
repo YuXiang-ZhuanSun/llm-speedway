@@ -148,7 +148,7 @@ The runtime path is simple: config and scenarios feed the runner; the provider a
 The code layout follows the same boundaries:
 
 ```text
-llm_latency_benchmark/
+llm_speedway/
   cli.py                  # command entry
   runner.py               # benchmark orchestration
   core/                   # config, metrics, token estimation

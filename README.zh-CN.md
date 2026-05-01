@@ -148,7 +148,7 @@ flowchart LR
 代码目录也按同样的边界组织：
 
 ```text
-llm_latency_benchmark/
+llm_speedway/
   cli.py                  # 命令入口
   runner.py               # benchmark 编排
   core/                   # 配置、指标、token 估算

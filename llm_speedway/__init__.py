@@ -1,6 +1,4 @@
-"""Compatibility package for running llm-speedway as a module."""
+"""LLM API latency benchmark toolkit."""
 
-from llm_latency_benchmark import __version__
-
-__all__ = ["__version__"]
+__version__ = "0.1.0"
 

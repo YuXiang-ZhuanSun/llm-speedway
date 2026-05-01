@@ -1,6 +1,6 @@
-from llm_latency_benchmark.cli import main
+from .cli import main
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()
 

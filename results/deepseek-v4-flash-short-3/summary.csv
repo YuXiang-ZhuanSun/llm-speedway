@@ -1,2 +1,0 @@
-scenario,round_id,runs,success_rate,ttft_ms_avg,total_latency_ms_avg,decode_tps_avg
-short_chat,,3,1.0,3499.846,4591.061,107.94

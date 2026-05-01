@@ -1,7 +1,7 @@
 import unittest
 
-from llm_latency_benchmark.core.metrics import RequestRecord
-from llm_latency_benchmark.core.metrics import calculate_speed_metrics, summarize
+from llm_speedway.core.metrics import RequestRecord
+from llm_speedway.core.metrics import calculate_speed_metrics, summarize
 
 
 class MetricsTests(unittest.TestCase):

@@ -22,8 +22,7 @@ classifiers = [
 ]
 
 [project.scripts]
-llm-speedway = "llm_latency_benchmark.cli:main"
+llm-speedway = "llm_speedway.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["llm_latency_benchmark*", "llm_speedway*"]
-
+include = ["llm_speedway*"]

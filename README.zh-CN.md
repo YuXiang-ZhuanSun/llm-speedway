@@ -11,6 +11,8 @@
   |
   <a href="results/README.md">Benchmarks</a>
   |
+  <a href="docs/source-walkthrough.zh-CN.md">Source Walkthrough</a>
+  |
   <a href="configs">Configs</a>
 </p>
 

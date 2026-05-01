@@ -130,27 +130,38 @@ These are first-pass reports, not statistical claims. Increase `runs_per_scenari
 
 ## Architecture
 
-```text
-llm_latency_benchmark/
-  cli.py
-  runner.py
-  core/
-    config.py
-    metrics.py
-    token_counter.py
-  providers/
-    openai_compatible.py
-  scenarios/
-    builtin.py
-  reports/
-    markdown.py
-configs/
-tests/
-results/
-assets/
+```mermaid
+flowchart LR
+  CLI["CLI\nllm-speedway run"] --> Config["Config\nmodel, endpoint, runs"]
+  Config --> Runner["Runner\norchestrates benchmark"]
+  Scenarios["Scenarios\nshort chat, long generation, multi-turn"] --> Runner
+  Runner --> Provider["Provider adapter\nOpenAI-compatible streaming"]
+  Provider --> API["LLM API\nDeepSeek, Ark, etc."]
+  API --> Stream["Streaming events\nchunks, finish reason, usage"]
+  Stream --> Metrics["Metrics core\nfirst token, task time, output speed"]
+  Metrics --> Reports["Reports\nMarkdown, CSV, JSONL"]
+  Reports --> Decision["Decision\nwhich model feels fast enough?"]
 ```
 
-The boundaries are intentional:
+The runtime path is simple: config and scenarios feed the runner; the provider adapter talks to the API; streaming events become metrics; reports turn those metrics into a model choice.
+
+The code layout follows the same boundaries:
+
+```text
+llm_latency_benchmark/
+  cli.py                  # command entry
+  runner.py               # benchmark orchestration
+  core/                   # config, metrics, token estimation
+  providers/              # API protocol adapters
+  scenarios/              # benchmark prompt suites
+  reports/                # Markdown / CSV / JSONL writers
+configs/                  # reusable provider configs
+tests/                    # metric and summary tests
+results/                  # committed benchmark reports
+assets/                   # logo and README assets
+```
+
+Why this shape:
 
 | Layer | Responsibility |
 |---|---|

@@ -130,27 +130,38 @@ llm-speedway run --config config.json --scenario short_chat --runs 3
 
 ## 技术架构
 
-```text
-llm_latency_benchmark/
-  cli.py
-  runner.py
-  core/
-    config.py
-    metrics.py
-    token_counter.py
-  providers/
-    openai_compatible.py
-  scenarios/
-    builtin.py
-  reports/
-    markdown.py
-configs/
-tests/
-results/
-assets/
+```mermaid
+flowchart LR
+  CLI["CLI\nllm-speedway run"] --> Config["Config\n模型、接口、运行次数"]
+  Config --> Runner["Runner\n编排 benchmark"]
+  Scenarios["Scenarios\n短对话、长输出、多轮"] --> Runner
+  Runner --> Provider["Provider adapter\nOpenAI-compatible streaming"]
+  Provider --> API["LLM API\nDeepSeek、Ark 等"]
+  API --> Stream["Streaming events\nchunk、finish reason、usage"]
+  Stream --> Metrics["Metrics core\n首 token、任务耗时、生成速度"]
+  Metrics --> Reports["Reports\nMarkdown、CSV、JSONL"]
+  Reports --> Decision["Decision\n哪个模型足够快"]
 ```
 
-边界是有意设计的：
+运行链路很直接：配置和场景进入 runner；provider adapter 调用 API；streaming 事件进入指标层；报告把指标变成模型选择依据。
+
+代码目录也按同样的边界组织：
+
+```text
+llm_latency_benchmark/
+  cli.py                  # 命令入口
+  runner.py               # benchmark 编排
+  core/                   # 配置、指标、token 估算
+  providers/              # API 协议适配
+  scenarios/              # 测试 prompt 套件
+  reports/                # Markdown / CSV / JSONL 输出
+configs/                  # 可复用 provider 配置
+tests/                    # 指标与汇总测试
+results/                  # 已提交的 benchmark 报告
+assets/                   # logo 与 README 素材
+```
+
+为什么这样拆：
 
 | 层 | 职责 |
 |---|---|

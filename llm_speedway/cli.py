@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""命令行入口。
+
+用户通过 `llm-speedway run --config ...` 进入项目。
+CLI 只负责解析参数和启动 Runner，不直接处理 HTTP、指标或报告。
+"""
+
 import argparse
 import sys
 from pathlib import Path
@@ -9,6 +15,7 @@ from .runner import BenchmarkRunner
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """构建命令行参数解析器。"""
     parser = argparse.ArgumentParser(
         prog="llm-speedway",
         description="Benchmark OpenAI-compatible LLM chat completion latency.",
@@ -40,6 +47,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """CLI 主函数，返回 shell 友好的退出码。"""
     parser = build_parser()
     args = parser.parse_args(argv)
 
@@ -48,6 +56,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     try:
+        # 先读取配置文件，再应用命令行覆盖项。
         config = load_config(Path(args.config))
         if args.scenario:
             config.scenarios = args.scenario

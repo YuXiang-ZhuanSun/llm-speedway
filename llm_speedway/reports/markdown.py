@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""报告输出模块。
+
+这里负责把 RequestRecord 写成三种产物：
+Markdown 给人读，CSV 给表格工具读，JSONL 给排查和复现读。
+"""
+
 import csv
 import json
 from pathlib import Path
@@ -10,6 +16,8 @@ from ..core.metrics import RequestRecord
 
 
 class Reporter:
+    """把 benchmark 结果写入 results 目录。"""
+
     def __init__(self, results_dir: Path) -> None:
         self.results_dir = results_dir
         self.results_dir.mkdir(parents=True, exist_ok=True)
@@ -20,17 +28,20 @@ class Reporter:
         records: list[RequestRecord],
         summary_rows: list[dict[str, Any]],
     ) -> Path:
+        """一次性写出 raw、summary 和 Markdown 报告。"""
         self._write_raw(records)
         self._write_summary_csv(summary_rows)
         return self._write_markdown(config, summary_rows, records)
 
     def _write_raw(self, records: list[RequestRecord]) -> None:
+        """写完整原始记录，方便后续复现和调试。"""
         path = self.results_dir / "raw_results.jsonl"
         with path.open("w", encoding="utf-8") as file:
             for record in records:
                 file.write(json.dumps(record.to_dict(), ensure_ascii=False) + "\n")
 
     def _write_summary_csv(self, summary_rows: list[dict[str, Any]]) -> None:
+        """写面向表格分析的精简 CSV。"""
         path = self.results_dir / "summary.csv"
         if not summary_rows:
             path.write_text("", encoding="utf-8")
@@ -57,6 +68,7 @@ class Reporter:
         summary_rows: list[dict[str, Any]],
         records: list[RequestRecord],
     ) -> Path:
+        """写面向人类决策的 Markdown 报告。"""
         path = self.results_dir / "report.md"
         successful_records = [record for record in records if record.success]
         overall_success = len(successful_records) / len(records) if records else 0
@@ -111,6 +123,7 @@ class Reporter:
 
 
 def _headline(summary_rows: list[dict[str, Any]]) -> str:
+    """生成报告开头的一句话摘要。"""
     short = _find_row(summary_rows, "short_chat", None)
     long = _find_row(summary_rows, "long_generation", None)
     multi_rows = [row for row in summary_rows if row.get("scenario") == "multi_turn" and row.get("success_rate", 0) > 0]
@@ -129,6 +142,7 @@ def _headline(summary_rows: list[dict[str, Any]]) -> str:
 
 
 def _find_row(summary_rows: list[dict[str, Any]], scenario: str, round_id: int | None) -> dict[str, Any] | None:
+    """查找指定场景和轮次的汇总行。"""
     for row in summary_rows:
         if row.get("scenario") == scenario and row.get("round_id") == round_id:
             return row
@@ -136,12 +150,14 @@ def _find_row(summary_rows: list[dict[str, Any]], scenario: str, round_id: int |
 
 
 def _fmt_ms(value: Any) -> str:
+    """毫秒转成秒显示。"""
     if value is None:
         return "-"
     return f"{float(value) / 1000:.2f}s"
 
 
 def _fmt_tps(value: Any) -> str:
+    """格式化 tokens/s。"""
     if value is None:
         return "-"
     return f"{float(value):.1f} tok/s"

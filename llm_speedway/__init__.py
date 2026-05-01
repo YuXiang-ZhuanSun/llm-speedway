@@ -1,4 +1,3 @@
-"""LLM API latency benchmark toolkit."""
+"""llm-speedway 包元信息。"""
 
 __version__ = "0.1.0"
-

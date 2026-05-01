@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""指标数据结构与统计函数。
+
+报告只展示三个指标，但原始记录保留更多字段，
+这样既能保持 README 和报告清爽，也能在需要时回溯细节。
+"""
+
 from dataclasses import dataclass, field
 from statistics import mean
 from typing import Any
@@ -7,6 +13,8 @@ from typing import Any
 
 @dataclass
 class RequestRecord:
+    """一次 API 请求对应的一条原始记录。"""
+
     scenario: str
     run_id: int
     round_id: int | None
@@ -26,6 +34,10 @@ class RequestRecord:
     assistant_content: str = field(default="", repr=False)
 
     def to_dict(self) -> dict[str, Any]:
+        """转成可写入 JSONL 的 dict。
+
+        assistant_content 可能很长，只用于多轮上下文传递，不写入公开报告。
+        """
         return {
             "scenario": self.scenario,
             "run_id": self.run_id,
@@ -51,9 +63,11 @@ def calculate_speed_metrics(
     total_latency_ms: float,
     output_tokens: int,
 ) -> tuple[float | None, float | None, float | None]:
+    """根据首 token、总耗时和输出 token 数计算速度指标。"""
     generation_time_ms = None
     decode_tps = None
     if ttft_ms is not None:
+        # 生成阶段耗时 = 总耗时 - 首 token 等待时间。
         generation_time_ms = max(total_latency_ms - ttft_ms, 0.0)
         if generation_time_ms > 0:
             decode_tps = output_tokens / (generation_time_ms / 1000)
@@ -66,6 +80,7 @@ def calculate_speed_metrics(
 
 
 def summarize(records: list[RequestRecord]) -> list[dict[str, Any]]:
+    """按 scenario + round 聚合多次运行结果。"""
     groups: dict[tuple[str, int | None], list[RequestRecord]] = {}
     for record in records:
         key = (record.scenario, record.round_id)
@@ -97,6 +112,7 @@ def summarize(records: list[RequestRecord]) -> list[dict[str, Any]]:
 
 
 def _stats(prefix: str, values: list[float]) -> dict[str, float | None]:
+    """计算平均值、分位数、最小值和最大值。"""
     if not values:
         return {
             f"{prefix}_avg": None,
@@ -118,6 +134,7 @@ def _stats(prefix: str, values: list[float]) -> dict[str, float | None]:
 
 
 def _percentile(sorted_values: list[float], percentile: float) -> float:
+    """线性插值分位数。"""
     if len(sorted_values) == 1:
         return sorted_values[0]
     rank = (len(sorted_values) - 1) * percentile / 100
@@ -128,6 +145,7 @@ def _percentile(sorted_values: list[float], percentile: float) -> float:
 
 
 def _round_or_none(value: float | None) -> float | None:
+    """统一保留三位小数。"""
     if value is None:
         return None
     return round(value, 3)

@@ -134,7 +134,7 @@ llm-speedway run --config config.json --scenario short_chat --runs 3
 
 | 阶段 | 模块 | 职责 |
 |---|---|---|
-| 1. Define | `configs/` + `scenarios/` | 选择模型、接口、运行次数和 prompt 形态 |
+| 1. Define | `configs/` + 根目录 `scenarios/` | 选择模型、接口、运行次数和 prompt 形态 |
 | 2. Run | `runner.py` | 执行每个场景，保留请求级记录 |
 | 3. Call | `providers/` | 调用 OpenAI-compatible streaming API |
 | 4. Measure | `core/metrics.py` | 把流式事件转成首 token、任务耗时、生成速度 |
@@ -161,9 +161,10 @@ llm_speedway/
   runner.py               # benchmark 编排
   core/                   # 配置、指标、token 估算
   providers/              # API 协议适配
-  scenarios/              # 测试 prompt 套件
+  scenarios/              # 场景 JSON 加载器
   reports/                # Markdown / CSV / JSONL 输出
 configs/                  # 可复用 provider 配置
+scenarios/                # 可扩展 benchmark 用例
 tests/                    # 指标与汇总测试
 results/                  # 已提交的 benchmark 报告
 assets/                   # logo 与 README 素材
@@ -175,11 +176,47 @@ assets/                   # logo 与 README 素材
 |---|---|
 | `core/` | 配置解析、指标计算、token 估算 |
 | `providers/` | API 协议适配；当前支持 OpenAI-compatible Chat API |
-| `scenarios/` | prompt 套件与对话形态 |
+| `llm_speedway/scenarios/` | 场景 JSON 加载与校验 |
 | `reports/` | Markdown 和 CSV 输出 |
 | `runner.py` | 串联 provider、scenario、metrics、report |
 
 新增 provider 不应该动指标。新增场景不应该动 HTTP。改报告不应该重写原始数据。
+
+## 扩展用例
+
+Benchmark 用例放在 Python 包外：
+
+```text
+scenarios/
+  short_chat.json
+  long_generation.json
+  multi_turn.json
+```
+
+新增一个 JSON 文件：
+
+```json
+{
+  "name": "agent_tool_call",
+  "description": "工具调用密集型 Agent 任务。",
+  "kind": "single_turn",
+  "max_tokens": 512,
+  "prompts": [
+    "为一个 Python CLI 项目规划三步重构方案。"
+  ]
+}
+```
+
+然后在配置中引用：
+
+```json
+{
+  "benchmark": {
+    "scenarios_dir": "scenarios"
+  },
+  "scenarios": ["agent_tool_call"]
+}
+```
 
 ## 数据模型
 

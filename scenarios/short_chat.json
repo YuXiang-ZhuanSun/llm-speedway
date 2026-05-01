@@ -1,0 +1,10 @@
+{
+  "name": "short_chat",
+  "description": "短对话：轻量问答，观察首 token 等待感。",
+  "kind": "single_turn",
+  "max_tokens": 256,
+  "prompts": [
+    "请严格用三句话解释什么是机器学习。"
+  ]
+}
+

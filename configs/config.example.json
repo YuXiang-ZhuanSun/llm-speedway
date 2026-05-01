@@ -10,7 +10,8 @@
     "timeout_seconds": 120,
     "warmup_runs": 1,
     "stream": true,
-    "results_dir": "results"
+    "results_dir": "results",
+    "scenarios_dir": "scenarios"
   },
   "generation": {
     "temperature": 0.7,

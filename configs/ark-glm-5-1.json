@@ -9,7 +9,8 @@
     "timeout_seconds": 180,
     "warmup_runs": 0,
     "stream": true,
-    "results_dir": "results/ark-glm-5-1"
+    "results_dir": "results/ark-glm-5-1",
+    "scenarios_dir": "scenarios"
   },
   "generation": {
     "temperature": 0.7,
@@ -21,4 +22,3 @@
     "multi_turn"
   ]
 }
-

@@ -1,0 +1,10 @@
+{
+  "name": "long_generation",
+  "description": "长输出：观察模型开始输出后的持续生成速度。",
+  "kind": "single_turn",
+  "max_tokens": 1024,
+  "prompts": [
+    "请写一篇 1000 字左右的文章，主题是人工智能对软件工程的影响。"
+  ]
+}
+

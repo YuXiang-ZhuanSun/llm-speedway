@@ -134,7 +134,7 @@ These are first-pass reports, not statistical claims. Increase `runs_per_scenari
 
 | Stage | Module | Job |
 |---|---|---|
-| 1. Define | `configs/` + `scenarios/` | Choose model, endpoint, runs, and prompt shape |
+| 1. Define | `configs/` + root `scenarios/` | Choose model, endpoint, runs, and prompt shape |
 | 2. Run | `runner.py` | Execute each scenario and preserve request-level records |
 | 3. Call | `providers/` | Talk to OpenAI-compatible streaming APIs |
 | 4. Measure | `core/metrics.py` | Convert stream events into first token, task time, output speed |
@@ -161,9 +161,10 @@ llm_speedway/
   runner.py               # benchmark orchestration
   core/                   # config, metrics, token estimation
   providers/              # API protocol adapters
-  scenarios/              # benchmark prompt suites
+  scenarios/              # scenario JSON loader
   reports/                # Markdown / CSV / JSONL writers
 configs/                  # reusable provider configs
+scenarios/                # extensible benchmark cases
 tests/                    # metric and summary tests
 results/                  # committed benchmark reports
 assets/                   # logo and README assets
@@ -175,11 +176,47 @@ Why this shape:
 |---|---|
 | `core/` | Config parsing, metric math, token estimation |
 | `providers/` | API protocol adapters; currently OpenAI-compatible Chat API |
-| `scenarios/` | Prompt suites and conversation shape |
+| `llm_speedway/scenarios/` | Scenario JSON loading and validation |
 | `reports/` | Markdown and CSV output |
 | `runner.py` | Orchestration across provider, scenario, metrics, and report |
 
 Adding a provider should not touch metrics. Adding a scenario should not touch HTTP. Changing the report should not rewrite raw data.
+
+## Extending scenarios
+
+Benchmark cases live outside the Python package:
+
+```text
+scenarios/
+  short_chat.json
+  long_generation.json
+  multi_turn.json
+```
+
+Add a new JSON file:
+
+```json
+{
+  "name": "agent_tool_call",
+  "description": "Tool-heavy agent task.",
+  "kind": "single_turn",
+  "max_tokens": 512,
+  "prompts": [
+    "Plan a three-step refactor for a Python CLI project."
+  ]
+}
+```
+
+Then reference it in config:
+
+```json
+{
+  "benchmark": {
+    "scenarios_dir": "scenarios"
+  },
+  "scenarios": ["agent_tool_call"]
+}
+```
 
 ## Data model
 

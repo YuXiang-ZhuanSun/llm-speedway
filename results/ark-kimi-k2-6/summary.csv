@@ -1,4 +1,5 @@
 scenario,round_id,runs,success_rate,ttft_ms_avg,total_latency_ms_avg,decode_tps_avg
-long_generation,,1,1.0,12668.463,27651.223,68.345
-multi_turn,1,1,0.0,,,
-short_chat,,1,1.0,11882.472,11944.758,4110.106
+long_generation,,1,1.0,12653.217,30933.57,56.016
+multi_turn,1,1,1.0,17377.163,20712.441,153.51
+multi_turn,2,1,0.0,,,
+short_chat,,1,1.0,13042.421,13809.95,333.538

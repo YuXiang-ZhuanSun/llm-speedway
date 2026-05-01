@@ -4,19 +4,19 @@
 
 ## Read This First
 
-Short chat starts in 15.31s. Long generation runs at 105.1 tok/s. Final multi-turn speed is 57.7 tok/s.
+Short chat starts in 13.32s. Long generation runs at 103.2 tok/s. Final multi-turn speed is 92.4 tok/s.
 
 ## Speed Metrics
 
 | Scenario | Round | Start latency | Generation speed |
 |---|---:|---:|---:|
-| long_generation | - | 27.77s | 105.1 tok/s |
-| multi_turn | 1 | 18.37s | 111.9 tok/s |
-| multi_turn | 2 | 73.02s | 162.1 tok/s |
-| multi_turn | 3 | 15.72s | 93.0 tok/s |
-| multi_turn | 4 | 11.00s | 58.0 tok/s |
-| multi_turn | 5 | 5.95s | 57.7 tok/s |
-| short_chat | - | 15.31s | 291.2 tok/s |
+| long_generation | - | 26.57s | 103.2 tok/s |
+| multi_turn | 1 | 25.95s | 129.2 tok/s |
+| multi_turn | 2 | 21.44s | 112.5 tok/s |
+| multi_turn | 3 | 44.95s | 205.6 tok/s |
+| multi_turn | 4 | 30.08s | 188.3 tok/s |
+| multi_turn | 5 | 22.64s | 92.4 tok/s |
+| short_chat | - | 13.32s | 95.6 tok/s |
 
 ## How To Read
 

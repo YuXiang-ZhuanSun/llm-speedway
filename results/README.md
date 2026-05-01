@@ -10,10 +10,10 @@ All public reports use the same three benchmark signals:
 
 | Model | Start latency | Generation speed | Multi-turn speed | Report |
 |---|---:|---:|---|---|
-| `deepseek-v4-flash` | 6.33s | 97.6 tok/s | final round 109.6 tok/s | [report](deepseek-v4-flash/report.md) |
-| `doubao-seed-2.0-code` | 15.31s | 105.1 tok/s | final round 57.7 tok/s | [report](ark-doubao-seed-2-code/report.md) |
-| `glm-5.1` | 24.56s | 76.5 tok/s | failed on round 1 | [report](ark-glm-5-1/report.md) |
-| `kimi-k2.6` | 11.88s | 68.3 tok/s | empty visible response on round 1 | [report](ark-kimi-k2-6/report.md) |
+| `deepseek-v4-flash` | 5.57s | 96.0 tok/s | final round 59.3 tok/s | [report](deepseek-v4-flash/report.md) |
+| `doubao-seed-2.0-code` | 13.32s | 103.2 tok/s | final round 92.4 tok/s | [report](ark-doubao-seed-2-code/report.md) |
+| `glm-5.1` | 28.71s | 67.4 tok/s | final round 64.5 tok/s | [report](ark-glm-5-1/report.md) |
+| `kimi-k2.6` | 13.04s | 56.0 tok/s | round 1 153.5 tok/s, failed on round 2 | [report](ark-kimi-k2-6/report.md) |
 
 `multi_turn` is a context-accumulation test: each round is a new request that carries previous conversation history.
 

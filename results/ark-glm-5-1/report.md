@@ -1,18 +1,22 @@
 # glm-5.1
 
-`https://ark.cn-beijing.volces.com/api/coding/v3` | 1 run(s) per scenario | success 67%
+`https://ark.cn-beijing.volces.com/api/coding/v3` | 1 run(s) per scenario | success 100%
 
 ## Read This First
 
-Short chat starts in 24.56s. Long generation runs at 76.5 tok/s.
+Short chat starts in 28.71s. Long generation runs at 67.4 tok/s. Final multi-turn speed is 64.5 tok/s.
 
 ## Speed Metrics
 
 | Scenario | Round | Start latency | Generation speed |
 |---|---:|---:|---:|
-| long_generation | - | 44.76s | 76.5 tok/s |
-| multi_turn | 1 | - | - |
-| short_chat | - | 24.56s | 146.7 tok/s |
+| long_generation | - | 53.57s | 67.4 tok/s |
+| multi_turn | 1 | 33.37s | 86.2 tok/s |
+| multi_turn | 2 | 40.38s | 76.5 tok/s |
+| multi_turn | 3 | 40.62s | 101.3 tok/s |
+| multi_turn | 4 | 64.21s | 29.3 tok/s |
+| multi_turn | 5 | 47.23s | 64.5 tok/s |
+| short_chat | - | 28.71s | 501.8 tok/s |
 
 ## How To Read
 
@@ -20,7 +24,3 @@ Short chat starts in 24.56s. Long generation runs at 76.5 tok/s.
 - Generation speed: generated tokens per second after the first token arrives.
 - Multi-turn speed: generation speed measured round by round while previous conversation history accumulates.
 - total_latency_ms is still kept in raw_results.jsonl for debugging, but it is not a headline benchmark metric.
-
-## Errors
-
-- `multi_turn` run `1` round `1`: [WinError 10054] 远程主机强迫关闭了一个现有的连接。

@@ -4,7 +4,7 @@
 
 # llm-speedway
 
-**Find the LLM API that makes agents feel fast: start latency, generation speed, and scenario completion in one clean report.**
+**Find the LLM API that makes agents feel fast: start latency, generation speed, and multi-turn speed in one clean report.**
 
 <p>
   <a href="README.zh-CN.md">中文</a>
@@ -22,7 +22,7 @@
 
 Agents are slow in a very specific way: they often make you wait in silence.
 
-`llm-speedway` benchmarks the part users actually feel. It measures when the first token appears, how fast the model writes once it starts, and when a controlled scenario actually finishes. The output is not a spreadsheet wall. It is a report you can read before choosing a model for an agent, coding assistant, chat product, or automation workflow.
+`llm-speedway` benchmarks the part users actually feel. It measures when the first token appears, how fast the model writes once it starts, and whether that speed survives accumulated conversation context. The output is not a spreadsheet wall. It is a report you can read before choosing a model for an agent, coding assistant, chat product, or automation workflow.
 
 ## What it is
 
@@ -41,19 +41,19 @@ Nothing is sent anywhere except the API endpoint you configure.
 
 ## Evaluation model
 
-`llm-speedway` separates **metrics** from **scenarios**. Metrics are measured on every request. Scenarios decide what kind of agent pain we are simulating.
+`llm-speedway` separates **raw fields** from **headline metrics**. Raw records keep timing details for debugging. The benchmark itself promotes three speed signals.
 
-| Metric | Field | Meaning | Use it for |
+| Metric | Source | Meaning | Use it for |
 |---|---|---|---|
 | **Start latency** | `ttft_ms` | Time until the first visible assistant token arrives | Whether the agent starts talking fast |
-| **Generation speed** | `decode_tps` | Tokens per second after the first token | Whether the model keeps writing quickly |
-| **Completion time** | `total_latency_ms` | Time until the stream closes for this fixed scenario/round | Whether this specific workflow finishes fast enough |
+| **Generation speed** | `long_generation.decode_tps` | Tokens per second after the first token on a long answer | Whether the model keeps writing quickly |
+| **Multi-turn speed** | `multi_turn.decode_tps` by round | Generation speed while conversation history accumulates | Whether the model stays fast as context grows |
 
 ### About completion time
 
-Completion time is not a universal model speed score. Response length can vary.
+`total_latency_ms` is still recorded for every request, but it is not a headline benchmark metric.
 
-`llm-speedway` treats it as a **scenario-bound product metric**: compare it within the same prompt, same model settings, same output cap, and same provider path. For normalized generation capability, use **Generation speed**. For perceived responsiveness, use **Start latency**.
+Completion time changes with answer length, stopping behavior, and provider-side truncation. It is useful for debugging a specific run, but it is too ambiguous to headline as a cross-model speed signal. For sustained output, use **Generation speed**. For context-heavy agents, use **Multi-turn speed**.
 
 That distinction is the point. Agent UX is not one number.
 
@@ -67,7 +67,7 @@ The built-in suite is small because each scenario maps to a real agent pain.
 | `long_generation` | Sustained generation | Look mainly at generation speed |
 | `multi_turn` | Context accumulation | Compare each round as history grows |
 
-These three cover the common failure mode in agents: slow start, slow writing, and degraded multi-turn behavior.
+These three cover the common failure mode in agents: slow start, slow writing, and degraded multi-turn speed.
 
 `multi_turn` is not "one multi-round answer." It is a sequence of requests. Round 2 carries round 1's assistant reply; round 3 carries the previous two rounds, and so on. This shows whether the same model gets slower as the conversation context becomes heavier.
 
@@ -123,7 +123,7 @@ llm-speedway run --config config.json --scenario short_chat --runs 3
 
 Committed small-sample reports live in [results](results/README.md).
 
-| Model | Start latency on `short_chat` | Generation speed on `long_generation` | `multi_turn` context test |
+| Model | Start latency | Generation speed | Multi-turn speed |
 |---|---:|---:|---|
 | `deepseek-v4-flash` | 6.33s | 97.6 tok/s | success |
 | `doubao-seed-2.0-code` | 15.31s | 105.1 tok/s | success |
@@ -141,7 +141,7 @@ These are first-pass reports, not statistical claims. Increase `runs_per_scenari
 | 1. Define | `configs/` + root `scenarios/` | Choose model, endpoint, runs, and prompt shape |
 | 2. Run | `runner.py` | Execute each scenario and preserve request-level records |
 | 3. Call | `providers/` | Talk to OpenAI-compatible streaming APIs |
-| 4. Measure | `core/metrics.py` | Convert stream events into start latency, completion time, generation speed |
+| 4. Measure | `core/metrics.py` | Convert stream events into start latency and generation speed |
 | 5. Report | `reports/` + `results/` | Produce Markdown, CSV, and JSONL artifacts |
 
 ```text
@@ -238,11 +238,13 @@ Each request produces one raw record:
 }
 ```
 
-The report promotes only:
+The report promotes:
 
 - `ttft_ms` -> Start latency
-- `total_latency_ms` -> Completion time
-- `decode_tps` -> Generation speed
+- `long_generation.decode_tps` -> Generation speed
+- `multi_turn.decode_tps` -> Multi-turn speed
+
+`total_latency_ms` remains in raw records for debugging and reproducibility, but it is not one of the headline benchmark metrics.
 
 If a streamed response contains no visible assistant content, the sample fails. Empty answers do not get pretty numbers.
 

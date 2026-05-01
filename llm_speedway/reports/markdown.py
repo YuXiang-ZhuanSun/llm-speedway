@@ -82,19 +82,18 @@ class Reporter:
             "",
             _headline(summary_rows),
             "",
-            "## Request Metrics",
+            "## Speed Metrics",
             "",
-            "| Scenario | Round | Start latency | Completion time | Generation speed |",
-            "|---|---:|---:|---:|---:|",
+            "| Scenario | Round | Start latency | Generation speed |",
+            "|---|---:|---:|---:|",
         ]
 
         for row in summary_rows:
             lines.append(
-                "| {scenario} | {round_id} | {ttft} | {total} | {decode} |".format(
+                "| {scenario} | {round_id} | {ttft} | {decode} |".format(
                     scenario=row["scenario"],
                     round_id=row["round_id"] if row["round_id"] is not None else "-",
                     ttft=_fmt_ms(row.get("ttft_ms_avg")),
-                    total=_fmt_ms(row.get("total_latency_ms_avg")),
                     decode=_fmt_tps(row.get("decode_tps_avg")),
                 )
             )
@@ -106,8 +105,8 @@ class Reporter:
                 "",
                 "- Start latency: user-visible waiting time before the model starts speaking.",
                 "- Generation speed: generated tokens per second after the first token arrives.",
-                "- Completion time: end-to-end time for the fixed scenario or round. Compare it only within the same prompt and settings.",
-                "- multi_turn: a sequence of requests carrying previous conversation history, used to expose context-growth slowdown.",
+                "- Multi-turn speed: generation speed measured round by round while previous conversation history accumulates.",
+                "- total_latency_ms is still kept in raw_results.jsonl for debugging, but it is not a headline benchmark metric.",
             ]
         )
 
@@ -136,7 +135,7 @@ def _headline(summary_rows: list[dict[str, Any]]) -> str:
     if long and long.get("success_rate", 0) > 0:
         parts.append(f"Long generation runs at {_fmt_tps(long.get('decode_tps_avg'))}.")
     if last_multi:
-        parts.append(f"By the last multi-turn round, completion time is {_fmt_ms(last_multi.get('total_latency_ms_avg'))}.")
+        parts.append(f"Final multi-turn speed is {_fmt_tps(last_multi.get('decode_tps_avg'))}.")
     if not parts:
         return "No successful samples were collected."
     return " ".join(parts)

@@ -6,20 +6,20 @@
 
 Short chat starts in 11.88s. Long generation runs at 68.3 tok/s.
 
-## Request Metrics
+## Speed Metrics
 
-| Scenario | Round | Start latency | Completion time | Generation speed |
-|---|---:|---:|---:|---:|
-| long_generation | - | 12.67s | 27.65s | 68.3 tok/s |
-| multi_turn | 1 | - | - | - |
-| short_chat | - | 11.88s | 11.94s | 4110.1 tok/s |
+| Scenario | Round | Start latency | Generation speed |
+|---|---:|---:|---:|
+| long_generation | - | 12.67s | 68.3 tok/s |
+| multi_turn | 1 | - | - |
+| short_chat | - | 11.88s | 4110.1 tok/s |
 
 ## How To Read
 
 - Start latency: user-visible waiting time before the model starts speaking.
 - Generation speed: generated tokens per second after the first token arrives.
-- Completion time: end-to-end time for the fixed scenario or round. Compare it only within the same prompt and settings.
-- multi_turn: a sequence of requests carrying previous conversation history, used to expose context-growth slowdown.
+- Multi-turn speed: generation speed measured round by round while previous conversation history accumulates.
+- total_latency_ms is still kept in raw_results.jsonl for debugging, but it is not a headline benchmark metric.
 
 ## Errors
 

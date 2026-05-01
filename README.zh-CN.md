@@ -4,7 +4,7 @@
 
 # llm-speedway
 
-**找到真正让 Agent 变快的 LLM API：启动延迟、生成速度、场景完成时间，一份报告讲清楚。**
+**找到真正让 Agent 变快的 LLM API：启动延迟、生成速度、多轮速度，一份报告讲清楚。**
 
 <p>
   <a href="README.md">English</a>
@@ -22,7 +22,7 @@
 
 Agent 的慢，往往不是抽象的慢，而是让用户长时间盯着空白界面。
 
-`llm-speedway` benchmark 的正是这部分体验：模型多久开始输出、开始输出后写得多快、一个受控场景什么时候真正结束。它不是把一堆指标倒进表格，而是生成一份能直接帮助你选模型的报告。
+`llm-speedway` benchmark 的正是这部分体验：模型多久开始输出、开始输出后写得多快、当对话上下文累积后还能不能保持速度。它不是把一堆指标倒进表格，而是生成一份能直接帮助你选模型的报告。
 
 ## 它是什么
 
@@ -41,19 +41,19 @@ results/<model>/
 
 ## 评价模型
 
-`llm-speedway` 把**指标**和**场景**分开。指标是每次请求都能测到的原始信号。场景负责模拟某类 Agent 体验问题。
+`llm-speedway` 把**原始字段**和**核心指标**分开。原始记录保留调试需要的时间细节，但 benchmark 对外只提升三个速度信号。
 
-| 指标 | 字段 | 含义 | 用来看什么 |
+| 指标 | 来源 | 含义 | 用来看什么 |
 |---|---|---|---|
 | **Start latency** | `ttft_ms` | 第一个可见 assistant token 到达的时间 | Agent 开始说话快不快 |
-| **Generation speed** | `decode_tps` | 首 token 之后的 tokens/s | 模型持续写得快不快 |
-| **Completion time** | `total_latency_ms` | 当前固定场景/轮次的流式响应结束时间 | 这个具体工作流是否足够快 |
+| **Generation speed** | `long_generation.decode_tps` | 长回答场景下，首 token 之后的 tokens/s | 模型持续写得快不快 |
+| **Multi-turn speed** | `multi_turn.decode_tps` 按轮次观察 | 上下文累积时的生成速度 | 对话变重后还能不能保持速度 |
 
 ### 关于 Completion time
 
-Completion time 不是一个跨所有 prompt 通用的模型速度分。
+`total_latency_ms` 仍然会记录在每次请求里，但它不是对外主打的 benchmark 指标。
 
-回复长度确实会变，所以 `llm-speedway` 把它定义成**场景绑定的产品指标**：只在相同 prompt、相同模型参数、相同输出上限、相同 provider 路径下比较。想看归一化后的生成能力，看 **Generation speed**。想看用户体感响应，看 **Start latency**。
+Completion time 会受到回复长度、停止行为、provider 截断策略影响。它适合排查某一次运行，不适合作为跨模型 headline speed signal。想看持续输出，看 **Generation speed**。想看上下文变重后的 Agent 体验，看 **Multi-turn speed**。
 
 这就是项目要讲清楚的事：Agent UX 不是一个数字。
 
@@ -67,7 +67,7 @@ Completion time 不是一个跨所有 prompt 通用的模型速度分。
 | `long_generation` | 长输出的持续生成 | 主要看 Generation speed |
 | `multi_turn` | 上下文累积后的退化 | 逐轮比较上下文变重后的指标变化 |
 
-这三类覆盖了 Agent 常见的速度问题：开头慢、写得慢、多轮后变慢。
+这三类覆盖了 Agent 常见的速度问题：开头慢、写得慢、多轮后速度变慢。
 
 `multi_turn` 不是“一个多轮回答”。它是一组连续请求：第 2 轮携带第 1 轮 assistant 回复，第 3 轮携带前两轮上下文，以此类推。它要看的是同一个模型在对话越来越重之后，是否开始变慢。
 
@@ -141,7 +141,7 @@ llm-speedway run --config config.json --scenario short_chat --runs 3
 | 1. Define | `configs/` + 根目录 `scenarios/` | 选择模型、接口、运行次数和 prompt 形态 |
 | 2. Run | `runner.py` | 执行每个场景，保留请求级记录 |
 | 3. Call | `providers/` | 调用 OpenAI-compatible streaming API |
-| 4. Measure | `core/metrics.py` | 把流式事件转成启动延迟、完成时间、生成速度 |
+| 4. Measure | `core/metrics.py` | 把流式事件转成启动延迟和生成速度 |
 | 5. Report | `reports/` + `results/` | 输出 Markdown、CSV、JSONL |
 
 ```text
@@ -238,11 +238,13 @@ scenarios/
 }
 ```
 
-报告只提升三个字段：
+报告只提升三个核心指标：
 
 - `ttft_ms` -> Start latency
-- `total_latency_ms` -> Completion time
-- `decode_tps` -> Generation speed
+- `long_generation.decode_tps` -> Generation speed
+- `multi_turn.decode_tps` -> Multi-turn speed
+
+`total_latency_ms` 仍然保留在原始记录里，用于调试和复现，但它不是 headline benchmark 指标。
 
 如果 streaming 响应没有任何可见 assistant 内容，这个样本会失败。空回答不应该拥有漂亮数字。
 

@@ -4,7 +4,7 @@
 
 # llm-speedway
 
-**找到真正让 Agent 变快的 LLM API：首 token、任务耗时、生成速度，一份报告讲清楚。**
+**找到真正让 Agent 变快的 LLM API：启动延迟、生成速度、场景完成时间，一份报告讲清楚。**
 
 <p>
   <a href="README.md">English</a>
@@ -22,7 +22,7 @@
 
 Agent 的慢，往往不是抽象的慢，而是让用户长时间盯着空白界面。
 
-`llm-speedway` benchmark 的正是这部分体验：模型多久开始输出、一个固定任务多久完成、开始输出后写得有多快。它不是把一堆指标倒进表格，而是生成一份能直接帮助你选模型的报告。
+`llm-speedway` benchmark 的正是这部分体验：模型多久开始输出、开始输出后写得多快、一个受控场景什么时候真正结束。它不是把一堆指标倒进表格，而是生成一份能直接帮助你选模型的报告。
 
 ## 它是什么
 
@@ -39,19 +39,21 @@ results/<model>/
 
 除了你配置的 API endpoint，数据不会发往其他地方。
 
-## 三个数字
+## 评价模型
 
-| 指标 | 含义 | 为什么重要 |
-|---|---|---|
-| **First token** | 第一个可见 assistant token 到达的时间 | 用户不再盯着空白界面 |
-| **Task time** | 固定场景 prompt 的端到端完成时间 | 产品工作流什么时候结束 |
-| **Output speed** | 首 token 之后的 tokens/s | 模型持续生成能力 |
+`llm-speedway` 把**指标**和**场景**分开。指标是每次请求都能测到的原始信号。场景负责模拟某类 Agent 体验问题。
 
-### 关于 “Task time”
+| 指标 | 字段 | 含义 | 用来看什么 |
+|---|---|---|---|
+| **Start latency** | `ttft_ms` | 第一个可见 assistant token 到达的时间 | Agent 开始说话快不快 |
+| **Generation speed** | `decode_tps` | 首 token 之后的 tokens/s | 模型持续写得快不快 |
+| **Completion time** | `total_latency_ms` | 当前固定场景/轮次的流式响应结束时间 | 这个具体工作流是否足够快 |
 
-Task time 不是一个跨所有 prompt 通用的模型速度分。
+### 关于 Completion time
 
-回复长度确实会变，所以 `llm-speedway` 把它定义成**场景级产品指标**：只在相同 prompt、相同模型参数、相同输出上限、相同 provider 路径下比较。想看归一化后的生成能力，看 **Output speed**。想看用户体感响应，看 **First token**。
+Completion time 不是一个跨所有 prompt 通用的模型速度分。
+
+回复长度确实会变，所以 `llm-speedway` 把它定义成**场景绑定的产品指标**：只在相同 prompt、相同模型参数、相同输出上限、相同 provider 路径下比较。想看归一化后的生成能力，看 **Generation speed**。想看用户体感响应，看 **Start latency**。
 
 这就是项目要讲清楚的事：Agent UX 不是一个数字。
 
@@ -59,13 +61,15 @@ Task time 不是一个跨所有 prompt 通用的模型速度分。
 
 内置场景很少，因为每一个都对应一个真实 Agent 痛点。
 
-| 场景 | 测什么 |
-|---|---|
-| `short_chat` | 轻量问答的等待感：它开始得快不快 |
-| `long_generation` | 长输出的持续生成速度：它写起来快不快 |
-| `multi_turn` | 上下文变长后的退化：对话重了以后会怎样 |
+| 场景 | 测什么 | 怎么读 |
+|---|---|---|
+| `short_chat` | 轻量问答的响应感 | 主要看 Start latency |
+| `long_generation` | 长输出的持续生成 | 主要看 Generation speed |
+| `multi_turn` | 上下文累积后的退化 | 逐轮比较上下文变重后的指标变化 |
 
 这三类覆盖了 Agent 常见的速度问题：开头慢、写得慢、多轮后变慢。
+
+`multi_turn` 不是“一个多轮回答”。它是一组连续请求：第 2 轮携带第 1 轮 assistant 回复，第 3 轮携带前两轮上下文，以此类推。它要看的是同一个模型在对话越来越重之后，是否开始变慢。
 
 ## 安装
 
@@ -137,7 +141,7 @@ llm-speedway run --config config.json --scenario short_chat --runs 3
 | 1. Define | `configs/` + 根目录 `scenarios/` | 选择模型、接口、运行次数和 prompt 形态 |
 | 2. Run | `runner.py` | 执行每个场景，保留请求级记录 |
 | 3. Call | `providers/` | 调用 OpenAI-compatible streaming API |
-| 4. Measure | `core/metrics.py` | 把流式事件转成首 token、任务耗时、生成速度 |
+| 4. Measure | `core/metrics.py` | 把流式事件转成启动延迟、完成时间、生成速度 |
 | 5. Report | `reports/` + `results/` | 输出 Markdown、CSV、JSONL |
 
 ```text
@@ -236,9 +240,9 @@ scenarios/
 
 报告只提升三个字段：
 
-- `ttft_ms` -> First token
-- `total_latency_ms` -> Task time
-- `decode_tps` -> Output speed
+- `ttft_ms` -> Start latency
+- `total_latency_ms` -> Completion time
+- `decode_tps` -> Generation speed
 
 如果 streaming 响应没有任何可见 assistant 内容，这个样本会失败。空回答不应该拥有漂亮数字。
 

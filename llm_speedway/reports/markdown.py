@@ -82,9 +82,9 @@ class Reporter:
             "",
             _headline(summary_rows),
             "",
-            "## Three Numbers",
+            "## Request Metrics",
             "",
-            "| Scenario | Round | First token | Task time | Output speed |",
+            "| Scenario | Round | Start latency | Completion time | Generation speed |",
             "|---|---:|---:|---:|---:|",
         ]
 
@@ -104,9 +104,10 @@ class Reporter:
                 "",
                 "## How To Read",
                 "",
-                "- First token: user-visible waiting time before the model starts speaking.",
-                "- Task time: end-to-end time for the fixed scenario prompt. Compare it within the same scenario.",
-                "- Output speed: generated tokens per second after the first token arrives.",
+                "- Start latency: user-visible waiting time before the model starts speaking.",
+                "- Generation speed: generated tokens per second after the first token arrives.",
+                "- Completion time: end-to-end time for the fixed scenario or round. Compare it only within the same prompt and settings.",
+                "- multi_turn: a sequence of requests carrying previous conversation history, used to expose context-growth slowdown.",
             ]
         )
 
@@ -135,7 +136,7 @@ def _headline(summary_rows: list[dict[str, Any]]) -> str:
     if long and long.get("success_rate", 0) > 0:
         parts.append(f"Long generation runs at {_fmt_tps(long.get('decode_tps_avg'))}.")
     if last_multi:
-        parts.append(f"By the last multi-turn round, task time is {_fmt_ms(last_multi.get('total_latency_ms_avg'))}.")
+        parts.append(f"By the last multi-turn round, completion time is {_fmt_ms(last_multi.get('total_latency_ms_avg'))}.")
     if not parts:
         return "No successful samples were collected."
     return " ".join(parts)

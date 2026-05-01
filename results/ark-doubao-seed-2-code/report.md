@@ -4,11 +4,11 @@
 
 ## Read This First
 
-Short chat starts in 15.31s. Long generation runs at 105.1 tok/s. By the last multi-turn round, task time is 16.40s.
+Short chat starts in 15.31s. Long generation runs at 105.1 tok/s. By the last multi-turn round, completion time is 16.40s.
 
-## Three Numbers
+## Request Metrics
 
-| Scenario | Round | First token | Task time | Output speed |
+| Scenario | Round | Start latency | Completion time | Generation speed |
 |---|---:|---:|---:|---:|
 | long_generation | - | 27.77s | 46.86s | 105.1 tok/s |
 | multi_turn | 1 | 18.37s | 28.50s | 111.9 tok/s |
@@ -20,6 +20,7 @@ Short chat starts in 15.31s. Long generation runs at 105.1 tok/s. By the last mu
 
 ## How To Read
 
-- First token: user-visible waiting time before the model starts speaking.
-- Task time: end-to-end time for the fixed scenario prompt. Compare it within the same scenario.
-- Output speed: generated tokens per second after the first token arrives.
+- Start latency: user-visible waiting time before the model starts speaking.
+- Generation speed: generated tokens per second after the first token arrives.
+- Completion time: end-to-end time for the fixed scenario or round. Compare it only within the same prompt and settings.
+- multi_turn: a sequence of requests carrying previous conversation history, used to expose context-growth slowdown.

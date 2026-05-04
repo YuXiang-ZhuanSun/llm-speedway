@@ -4,7 +4,7 @@
 
 # llm-speedway
 
-**一个本地桌面 LLM API 延迟基准测试工具：首 token 延迟、持续生成速度、多轮上下文速度，一次测清楚。**
+**Find the LLM API that makes agents fast: start latency, generation speed, and multi-turn speed.**
 
 <p>
   <a href="README.md">English</a>
@@ -18,7 +18,9 @@
   <a href="v2/docs/prd-v2-cross-platform.zh-CN.md">V2 PRD</a>
 </p>
 
-`llm-speedway` 测的是用户真正能感受到的 LLM API 速度：模型多久开始输出、开始之后写得多快、上下文变长之后还能不能保持速度。
+Agents are slow in a very specific way: they often make you wait in silence.
+
+Agent 干活的时候，API 一慢，人类就只能在屏幕前等。这很让人不爽，而且每一次工具调用、重试、多轮任务都会把这种等待放大。`llm-speedway` 要清晰测出 API 是不是又快又稳：首 token 延迟够不够低、持续生成够不够快、多轮上下文变重之后还能不能保持速度。
 
 V2 是一个 Tauri 桌面应用。你可以添加不同供应商、模型、base URL 和 API key，运行测评，并在本地对比结果。
 

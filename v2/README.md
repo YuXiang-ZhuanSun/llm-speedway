@@ -4,7 +4,13 @@
 
 # llm-speedway V2
 
+**Find the LLM API that makes agents fast: start latency, generation speed, and multi-turn speed.**
+
 V2 is the desktop app version of `llm-speedway`, built with Tauri, React, TypeScript, Rust, and SQLite.
+
+Agents are slow in a very specific way: they often make you wait in silence.
+
+When an agent is working, a slow API turns into human waiting time. `llm-speedway` helps compare whether an API is fast and stable across the signals that matter for agent work: start latency, generation speed, and multi-turn speed.
 
 It runs locally, stores provider configs and benchmark history locally, and sends requests only to the API endpoint you configure.
 

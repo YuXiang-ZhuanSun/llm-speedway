@@ -4,7 +4,7 @@
 
 # llm-speedway
 
-**A local desktop benchmark for LLM API latency: start latency, generation speed, and multi-turn speed in one reproducible app.**
+**Find the LLM API that makes agents fast: start latency, generation speed, and multi-turn speed.**
 
 <p>
   <a href="README.zh-CN.md">中文</a>
@@ -25,7 +25,9 @@
 ![API](https://img.shields.io/badge/API-OpenAI%20%2B%20Anthropic-111827)
 ![Reports](https://img.shields.io/badge/Signals-TTFT%20%2B%20TPS-9A4F18)
 
-`llm-speedway` measures the part of an LLM API that users feel most directly: how long the model stays silent before the first token, how fast it writes after that, and whether that speed holds up as conversation context grows.
+Agents are slow in a very specific way: they often make you wait in silence.
+
+When an agent is working, a slow API turns into human waiting time. That is frustrating, and it compounds across every tool call, retry, and multi-turn task. `llm-speedway` helps you find APIs that are not just fast once, but fast and stable where agent UX actually breaks: start latency, generation speed, and multi-turn speed.
 
 V2 is a Tauri desktop app. Add provider configs, run speed tests, and compare results locally.
 

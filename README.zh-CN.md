@@ -1,14 +1,24 @@
+<p align="left">
+  <a href="README.md">English</a>
+</p>
+
 <p align="center">
   <img src="v1/assets/logo.svg" alt="llm-speedway logo" width="560">
 </p>
 
+<p align="center">
+  <strong>Agent 一沉默，时间就开始烧。</strong>
+</p>
+
+<p align="center">
+  <strong>Token 快，体验才快。</strong>
+</p>
+
 # llm-speedway
 
-**Find the LLM API that makes agents fast: start latency, generation speed, and multi-turn speed.**
+**测量 LLM API 的真实体感：延迟、吞吐、多轮响应**
 
 <p>
-  <a href="README.md">English</a>
-  |
   <a href="v1/results/README.md">Benchmarks</a>
   |
   <a href="v1/docs/source-walkthrough.zh-CN.md">源码导读</a>
@@ -18,21 +28,21 @@
   <a href="v2/docs/prd-v2-cross-platform.zh-CN.md">V2 PRD</a>
 </p>
 
-Agents are slow in a very specific way: they often make you wait in silence.
+Agent 沉默了，剩下的是漫长的等待。
 
-Agent 干活的时候，API 一慢，人类就只能在屏幕前等。这很让人不爽，而且每一次工具调用、重试、多轮任务都会把这种等待放大。`llm-speedway` 要清晰测出 API 是不是又快又稳：首 token 延迟够不够低、持续生成够不够快、多轮上下文变重之后还能不能保持速度。
+在 agent 场景里，API 的每一点延迟都会被放大。工具调用、失败重试、多轮上下文，都会把模型速度变成真实的等待时间。`llm-speedway` 测的不是漂亮参数，而是 agent 体验真正会卡住的地方：首 token 出得快不快，后续吐字够不够猛，上下文变长以后还能不能稳。
 
-V2 是一个 Tauri 桌面应用。你可以添加不同供应商、模型、base URL 和 API key，运行测评，并在本地对比结果。
+V2 是 Tauri 桌面应用。加 provider，跑测速，看对比，所有结果都留在本地。
 
 ![llm-speedway desktop screenshot](v2/assets/screenshot.png)
 
 ## 安装
 
-### 推荐方式：从 GitHub Releases 下载
+### 推荐方式：GitHub Releases
 
-打开 [GitHub Releases](https://github.com/YuXiang-ZhuanSun/llm-speedway/releases)，下载适合你系统的安装包。
+去 [GitHub Releases](https://github.com/YuXiang-ZhuanSun/llm-speedway/releases) 下载对应系统的安装包。
 
-应该发布的文件：
+预期发布文件：
 
 | 平台 | 文件 | 使用方式 |
 |---|---|---|
@@ -40,17 +50,17 @@ V2 是一个 Tauri 桌面应用。你可以添加不同供应商、模型、base
 | macOS | `.dmg` | 打开 DMG 后启动应用 |
 | Linux | `.AppImage` 或 `.deb` | 直接运行 AppImage，或安装 deb 包 |
 
-如果 Releases 页面暂时没有你需要的平台文件，请使用下面的源码安装方式。
+如果 release 页面暂时没有你的平台包，就从源码启动。
 
 ### 源码安装
 
-需要先安装：
+先准备：
 
 - Node.js 20+
 - Rust stable
 - 当前系统对应的 Tauri 构建依赖
 
-Windows 还需要 Visual Studio Build Tools，并安装 C++ workload。
+Windows 还需要安装 Visual Studio Build Tools，并启用 C++ workload。
 
 ```bash
 git clone https://github.com/YuXiang-ZhuanSun/llm-speedway.git
@@ -59,32 +69,32 @@ npm ci
 npm run desktop:dev
 ```
 
-本地构建桌面安装包：
+本地打包：
 
 ```bash
 npm run desktop:build
 ```
 
-生成的安装包位于 `v2/src-tauri/target/**/release/bundle/`。
+安装包会生成在 `v2/src-tauri/target/**/release/bundle/`。
 
 ## 快速开始
 
 1. 打开 `llm-speedway`。
 2. 点击 **Add config**。
-3. 填写供应商名称、base URL、模型、API key 和 API 格式。
+3. 填 provider 名称、base URL、模型、API key 和 API 格式。
 4. 选择 `OpenAI compatible` 或 `Anthropic compatible`。
 5. 点击 **Speedtest**。
-6. 对比首 token 延迟、生成速度、多轮速度和成功率。
+6. 看首 token 延迟、生成吞吐、多轮响应和成功率。
 
-错误 key、错误模型、假 API、错误 endpoint 都会作为真实失败记录。应用不会伪造测评数字。
+错 key、错模型、假 API、错 endpoint，都会按真实失败记录。`llm-speedway` 不造数。
 
-## 测什么
+## 测量指标
 
 | 指标 | 字段 | 含义 |
 |---|---|---|
-| 首 token 延迟 | `ttft_ms` | 第一段可见 assistant 内容到达所需时间 |
-| 生成速度 | `decode_tps` | 首 token 之后估算的 tokens/s |
-| 多轮速度 | `multi_turn_decode_tps` | 上下文累积后的生成速度 |
+| 首 token 延迟 | `ttft_ms` | 第一段可见 assistant 内容多久出现 |
+| 生成吞吐 | `decode_tps` | 首 token 之后的估算 tokens/s |
+| 多轮生成吞吐 | `multi_turn_decode_tps` | 上下文堆起来之后还能跑多快 |
 
 ## API 格式
 
@@ -116,17 +126,17 @@ Rust commands
 Services -> SQLite -> Speedtest HTTP streaming
 ```
 
-V2 的技术亮点是：它不是一个浏览器页面加脚本，而是一个真正的本地桌面测评应用。
+V2 是正经本地桌面 benchmark，不是给脚本套一层浏览器壳。
 
 | 层 | 技术职责 | 为什么重要 |
 |---|---|---|
-| React + TypeScript | 桌面 UI、供应商表单、结果表格、对比视图 | 让日常测速流程清晰、可扫描、可反复操作 |
-| Tauri IPC | 连接前端 UI 和 Rust 原生命令，不需要本地 HTTP 服务 | 避免 CORS 问题，也让应用作为一个桌面产品发布 |
-| Rust commands | 暴露供应商管理、测速等 typed app actions | 给前端一个小而稳定的调用边界 |
-| Rust services | 处理供应商逻辑、真实 streaming 请求、计时采集、结果归一化 | 测真实 API 行为，不做假数据、不靠估算糊弄 |
-| SQLite | 本地保存配置、测评历史和结果 | 方便复测和对比，同时不把数据发到额外服务 |
+| React + TypeScript | 桌面 UI、provider 表单、结果表格、对比视图 | 测速流程清楚，结果一眼能扫 |
+| Tauri IPC | 连接前端 UI 和 Rust 原生命令，不需要本地 HTTP 服务 | 少掉 CORS 麻烦，也更像一个真正的桌面产品 |
+| Rust commands | 暴露 provider 管理、测速等 typed app actions | 前端只接触一层小而稳定的接口 |
+| Rust services | 处理 provider 逻辑、真实 streaming 请求、计时采集和结果归一化 | 测真实 API 行为，不做假数据，也不靠估算糊过去 |
+| SQLite | 本地保存配置、测速历史和结果 | 方便复测、对比，也不用把数据交给额外服务 |
 
-测速链路是本地原生链路：
+测速走的是本地原生链路：
 
 ```text
 用户点击 Speedtest
@@ -144,9 +154,9 @@ OpenAI / Anthropic compatible streaming API
 Timing metrics -> SQLite -> UI comparison table
 ```
 
-这套架构要捕捉的是 agent 工作时真正影响体感的细节：第一段可见 token 什么时候到、streaming 后续写得有多快、响应是否真的产生了 assistant 文本、多轮上下文变重后速度是否还稳定。
+这套架构盯的是 agent 体验里最要命的细节：第一段可见 token 什么时候来，streaming 后面吐得有多快，响应是不是真的产出了 assistant 文本，多轮上下文变长后速度还稳不稳。
 
-本地数据存储在：
+本地数据在：
 
 ```text
 ~/.llm-speedway/llm-speedway.db
@@ -155,7 +165,7 @@ Timing metrics -> SQLite -> UI comparison table
 项目结构：
 
 ```text
-v1/        # 原 Python CLI 测评工具
+v1/        # 原始 Python CLI benchmark runner
 v2/        # Tauri + React + Rust 桌面应用
 ```
 
@@ -177,7 +187,7 @@ cargo check
 
 ## V1
 
-第一版保留在 [`v1/`](v1/)，仍然是可用的 Python CLI 测评工具，会输出 Markdown、CSV 和 JSONL。
+第一版保留在 [`v1/`](v1/)，仍然可以作为 Python CLI benchmark runner 使用，输出 Markdown、CSV 和 JSONL。
 
 ## License
 

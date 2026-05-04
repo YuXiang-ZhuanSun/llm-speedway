@@ -1,14 +1,24 @@
+<p align="left">
+  <a href="README.zh-CN.md">中文</a>
+</p>
+
 <p align="center">
   <img src="v1/assets/logo.svg" alt="llm-speedway logo" width="560">
 </p>
 
+<p align="center">
+  <strong>The agent goes quiet. The clock keeps running.</strong>
+</p>
+
+<p align="center">
+  <strong>Fast tokens matter.</strong>
+</p>
+
 # llm-speedway
 
-**Find the LLM API that makes agents fast: start latency, generation speed, and multi-turn speed.**
+**Benchmark LLM API latency, throughput, and multi-turn responsiveness.**
 
 <p>
-  <a href="README.zh-CN.md">中文</a>
-  |
   <a href="v1/results/README.md">Benchmarks</a>
   |
   <a href="v1/docs/source-walkthrough.zh-CN.md">Source Walkthrough</a>
@@ -25,9 +35,9 @@
 ![API](https://img.shields.io/badge/API-OpenAI%20%2B%20Anthropic-111827)
 ![Reports](https://img.shields.io/badge/Signals-TTFT%20%2B%20TPS-9A4F18)
 
-Agents are slow in a very specific way: they often make you wait in silence.
+Agents go silent. We wait.
 
-When an agent is working, a slow API turns into human waiting time. That is frustrating, and it compounds across every tool call, retry, and multi-turn task. `llm-speedway` helps you find APIs that are not just fast once, but fast and stable where agent UX actually breaks: start latency, generation speed, and multi-turn speed.
+When an agent is working, a slow API turns into human waiting time. That frustration compounds across every tool call, retry, and multi-turn task. `llm-speedway` helps you find APIs that are not just fast once, but fast and stable where agent UX actually breaks: first-token latency, generation throughput, and multi-turn responsiveness.
 
 V2 is a Tauri desktop app. Add provider configs, run speed tests, and compare results locally.
 
@@ -81,7 +91,7 @@ The generated installers are written under `v2/src-tauri/target/**/release/bundl
 3. Fill in provider name, base URL, model, API key, and API format.
 4. Choose `OpenAI compatible` or `Anthropic compatible`.
 5. Click **Speedtest**.
-6. Compare start latency, generation speed, multi-turn speed, and success rate.
+6. Compare first-token latency, generation throughput, multi-turn responsiveness, and success rate.
 
 Bad keys, wrong models, fake APIs, and incorrect endpoints fail as real failures. The app does not fabricate benchmark numbers.
 
@@ -89,9 +99,9 @@ Bad keys, wrong models, fake APIs, and incorrect endpoints fail as real failures
 
 | Signal | Field | Meaning |
 |---|---|---|
-| Start latency | `ttft_ms` | Time until the first visible assistant token arrives |
-| Generation speed | `decode_tps` | Estimated tokens per second after the first token |
-| Multi-turn speed | `multi_turn_decode_tps` | Generation speed after conversation history has accumulated |
+| First-token latency | `ttft_ms` | Time until the first visible assistant token arrives |
+| Generation throughput | `decode_tps` | Estimated tokens per second after the first token |
+| Multi-turn throughput | `multi_turn_decode_tps` | Generation speed after conversation history has accumulated |
 
 ## API Formats
 

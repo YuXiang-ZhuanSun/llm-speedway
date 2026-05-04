@@ -1,259 +1,194 @@
+<p align="left">
+  <a href="README.md">English</a>
+</p>
+
 <p align="center">
-  <img src="assets/logo.svg" alt="llm-speedway logo" width="560">
+  <img src="v1/assets/logo.svg" alt="llm-speedway logo" width="560">
+</p>
+
+<p align="center">
+  <strong>Agent 一沉默，时间就开始烧。</strong>
+</p>
+
+<p align="center">
+  <strong>Token 快，体验才快。</strong>
 </p>
 
 # llm-speedway
 
-**找到真正让 Agent 变快的 LLM API：启动延迟、生成速度、多轮速度，一份报告讲清楚。**
+**测量 LLM API 的真实体感：延迟、吞吐、多轮响应**
 
 <p>
-  <a href="README.md">English</a>
+  <a href="v1/results/README.md">Benchmarks</a>
   |
-  <a href="results/README.md">Benchmarks</a>
+  <a href="v1/docs/source-walkthrough.zh-CN.md">源码导读</a>
   |
-  <a href="docs/source-walkthrough.zh-CN.md">Source Walkthrough</a>
+  <a href="v1/configs">V1 配置</a>
   |
-  <a href="configs">Configs</a>
+  <a href="v2/docs/prd-v2-cross-platform.zh-CN.md">V2 PRD</a>
 </p>
 
-![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
-![OpenAI Compatible](https://img.shields.io/badge/API-OpenAI--compatible-111827)
-![Streaming](https://img.shields.io/badge/Streaming-TTFT-2563EB)
-![Reports](https://img.shields.io/badge/Reports-Markdown%20%2B%20CSV-0F766E)
-![Local CLI](https://img.shields.io/badge/Run-Local%20CLI-475569)
+Agent 沉默了，剩下的是漫长的等待。
 
-Agent 的慢，往往不是抽象的慢，而是让用户长时间盯着空白界面。
+在 agent 场景里，API 的每一点延迟都会被放大。工具调用、失败重试、多轮上下文，都会把模型速度变成真实的等待时间。`llm-speedway` 测的不是漂亮参数，而是 agent 体验真正会卡住的地方：首 token 出得快不快，后续吐字够不够猛，上下文变长以后还能不能稳。
 
-`llm-speedway` benchmark 的正是这部分体验：模型多久开始输出、开始输出后写得多快、当对话上下文累积后还能不能保持速度。它不是把一堆指标倒进表格，而是生成一份能直接帮助你选模型的报告。
+V2 是 Tauri 桌面应用。加 provider，跑测速，看对比，所有结果都留在本地。
 
-## 它是什么
-
-`llm-speedway` 是一个本地运行的 OpenAI-compatible Chat Completions API 测速工具。
-
-它会发送受控 prompt，监听 streaming 响应，记录首 token 时间，确认接口确实返回了可见 assistant 文本，然后写出：
-
-```text
-results/<model>/
-  report.md          # 给人看的报告
-  summary.csv        # 三个速度信号
-  raw_results.jsonl  # 完整请求级数据
-```
-
-除了你配置的 API endpoint，数据不会发往其他地方。
-
-## 速度信号
-
-`llm-speedway` benchmark 三个速度信号。每个信号都对应一个真实的 Agent UX 问题。
-
-| 信号 | 来源 | 含义 | 用来看什么 |
-|---|---|---|---|
-| **Start latency** | `ttft_ms` | 第一个可见 assistant token 到达的时间 | Agent 开始说话快不快 |
-| **Generation speed** | `long_generation.decode_tps` | 长回答场景下，首 token 之后的 tokens/s | 模型持续写得快不快 |
-| **Multi-turn speed** | `multi_turn.decode_tps` 按轮次观察 | 上下文累积时的生成速度 | 对话变重后还能不能保持速度 |
-
-原始数据仍会保留额外时间字段用于调试，但 benchmark 对外讲的就是这三个速度信号。
-
-## 测试场景
-
-内置场景很少，因为每一个都对应一个真实 Agent 痛点。
-
-| 场景 | 测什么 | 怎么读 |
-|---|---|---|
-| `short_chat` | 轻量问答的响应感 | 主要看 Start latency |
-| `long_generation` | 长输出的持续生成 | 主要看 Generation speed |
-| `multi_turn` | 上下文累积后的退化 | 逐轮比较上下文变重后的指标变化 |
-
-这三类覆盖了 Agent 常见的速度问题：开头慢、写得慢、多轮后速度变慢。
-
-`multi_turn` 不是“一个多轮回答”。它是一组连续请求：第 2 轮携带第 1 轮 assistant 回复，第 3 轮携带前两轮上下文，以此类推。它要看的是同一个模型在对话越来越重之后，是否开始变慢。
+![llm-speedway desktop screenshot](v2/assets/screenshot.png)
 
 ## 安装
 
-本地安装：
+### 推荐方式：GitHub Releases
 
-```powershell
-pip install -e .
+去 [GitHub Releases](https://github.com/YuXiang-ZhuanSun/llm-speedway/releases) 下载对应系统的安装包。
+
+预期发布文件：
+
+| 平台 | 文件 | 使用方式 |
+|---|---|---|
+| Windows | `.msi` 或 `.exe` | 安装后启动 `llm-speedway` |
+| macOS | `.dmg` | 打开 DMG 后启动应用 |
+| Linux | `.AppImage` 或 `.deb` | 直接运行 AppImage，或安装 deb 包 |
+
+如果 release 页面暂时没有你的平台包，就从源码启动。
+
+### 源码安装
+
+先准备：
+
+- Node.js 20+
+- Rust stable
+- 当前系统对应的 Tauri 构建依赖
+
+Windows 还需要安装 Visual Studio Build Tools，并启用 C++ workload。
+
+```bash
+git clone https://github.com/YuXiang-ZhuanSun/llm-speedway.git
+cd llm-speedway/v2
+npm ci
+npm run desktop:dev
 ```
 
-也可以直接运行测试：
+本地打包：
 
-```powershell
-python -m unittest discover -s tests
+```bash
+npm run desktop:build
 ```
 
-不依赖 OpenAI SDK。OpenAI-compatible adapter 使用 Python 标准库实现。
+安装包会生成在 `v2/src-tauri/target/**/release/bundle/`。
 
 ## 快速开始
 
-复制配置：
+1. 打开 `llm-speedway`。
+2. 点击 **Add config**。
+3. 填 provider 名称、base URL、模型、API key 和 API 格式。
+4. 选择 `OpenAI compatible` 或 `Anthropic compatible`。
+5. 点击 **Speedtest**。
+6. 看首 token 延迟、生成吞吐、多轮响应和成功率。
 
-```powershell
-Copy-Item configs/config.example.json config.json
-```
+错 key、错模型、假 API、错 endpoint，都会按真实失败记录。`llm-speedway` 不造数。
 
-推荐用环境变量放 API key：
+## 测量指标
 
-```json
-{
-  "api": {
-    "base_url": "https://api.example.com/v1",
-    "api_key_env": "LLM_API_KEY",
-    "model": "model-name"
-  }
-}
-```
-
-运行：
-
-```powershell
-llm-speedway run --config config.json
-```
-
-只跑一个场景：
-
-```powershell
-llm-speedway run --config config.json --scenario short_chat --runs 3
-```
-
-## Benchmark
-
-已提交的小样本报告在 [results](results/README.md)。
-
-| 模型 | 短对话首 token | 长输出生成速度 | 多轮 |
-|---|---:|---:|---|
-| `deepseek-v4-flash` | 6.33s | 97.6 tok/s | 成功 |
-| `doubao-seed-2.0-code` | 15.31s | 105.1 tok/s | 成功 |
-| `glm-5.1` | 24.56s | 76.5 tok/s | 第 1 轮失败 |
-| `kimi-k2.6` | 11.88s | 68.3 tok/s | 第 1 轮无可见输出 |
-
-这些是第一轮筛选报告，不是严格统计结论。如果需要更稳的数字，提高 `runs_per_scenario`。
-
-## 技术架构
-
-`llm-speedway` 只有一条主链路：**定义测试，调用模型，测量流式响应，写出报告。**
-
-| 阶段 | 模块 | 职责 |
+| 指标 | 字段 | 含义 |
 |---|---|---|
-| 1. Define | `configs/` + 根目录 `scenarios/` | 选择模型、接口、运行次数和 prompt 形态 |
-| 2. Run | `runner.py` | 执行每个场景，保留请求级记录 |
-| 3. Call | `providers/` | 调用 OpenAI-compatible streaming API |
-| 4. Measure | `core/metrics.py` | 把流式事件转成启动延迟和生成速度 |
-| 5. Report | `reports/` + `results/` | 输出 Markdown、CSV、JSONL |
+| 首 token 延迟 | `ttft_ms` | 第一段可见 assistant 内容多久出现 |
+| 生成吞吐 | `decode_tps` | 首 token 之后的估算 tokens/s |
+| 多轮生成吞吐 | `multi_turn_decode_tps` | 上下文堆起来之后还能跑多快 |
+
+## API 格式
+
+OpenAI-compatible API：
 
 ```text
-config + scenario
-      |
-      v
-runner -> provider -> LLM API -> stream events
-      |                              |
-      v                              v
-raw records --------------------> metrics
-                                     |
-                                     v
-                         report.md / summary.csv / raw_results.jsonl
+POST /chat/completions
+Authorization: Bearer <API_KEY>
 ```
 
-代码目录也按同样的边界组织：
+Anthropic-compatible API：
 
 ```text
-llm_speedway/
-  cli.py                  # 命令入口
-  runner.py               # benchmark 编排
-  core/                   # 配置、指标、token 估算
-  providers/              # API 协议适配
-  scenarios/              # 场景 JSON 加载器
-  reports/                # Markdown / CSV / JSONL 输出
-configs/                  # 可复用 provider 配置
-scenarios/                # 可扩展 benchmark 用例
-tests/                    # 指标与汇总测试
-results/                  # 已提交的 benchmark 报告
-assets/                   # logo 与 README 素材
+POST /v1/messages
+x-api-key: <API_KEY>
+anthropic-version: 2023-06-01
 ```
 
-为什么这样拆：
-
-| 层 | 职责 |
-|---|---|
-| `core/` | 配置解析、指标计算、token 估算 |
-| `providers/` | API 协议适配；当前支持 OpenAI-compatible Chat API |
-| `llm_speedway/scenarios/` | 场景 JSON 加载与校验 |
-| `reports/` | Markdown 和 CSV 输出 |
-| `runner.py` | 串联 provider、scenario、metrics、report |
-
-新增 provider 不应该动指标。新增场景不应该动 HTTP。改报告不应该重写原始数据。
-
-## 扩展用例
-
-Benchmark 用例放在 Python 包外：
+## V2 技术架构
 
 ```text
-scenarios/
-  short_chat.json
-  long_generation.json
-  multi_turn.json
+React + TypeScript UI
+        |
+        | Tauri IPC
+        v
+Rust commands
+        |
+        v
+Services -> SQLite -> Speedtest HTTP streaming
 ```
 
-新增一个 JSON 文件：
+V2 是正经本地桌面 benchmark，不是给脚本套一层浏览器壳。
 
-```json
-{
-  "name": "agent_tool_call",
-  "description": "工具调用密集型 Agent 任务。",
-  "kind": "single_turn",
-  "max_tokens": 512,
-  "prompts": [
-    "为一个 Python CLI 项目规划三步重构方案。"
-  ]
-}
+| 层 | 技术职责 | 为什么重要 |
+|---|---|---|
+| React + TypeScript | 桌面 UI、provider 表单、结果表格、对比视图 | 测速流程清楚，结果一眼能扫 |
+| Tauri IPC | 连接前端 UI 和 Rust 原生命令，不需要本地 HTTP 服务 | 少掉 CORS 麻烦，也更像一个真正的桌面产品 |
+| Rust commands | 暴露 provider 管理、测速等 typed app actions | 前端只接触一层小而稳定的接口 |
+| Rust services | 处理 provider 逻辑、真实 streaming 请求、计时采集和结果归一化 | 测真实 API 行为，不做假数据，也不靠估算糊过去 |
+| SQLite | 本地保存配置、测速历史和结果 | 方便复测、对比，也不用把数据交给额外服务 |
+
+测速走的是本地原生链路：
+
+```text
+用户点击 Speedtest
+        |
+        v
+Tauri command
+        |
+        v
+Rust speedtest service
+        |
+        v
+OpenAI / Anthropic compatible streaming API
+        |
+        v
+Timing metrics -> SQLite -> UI comparison table
 ```
 
-然后在配置中引用：
+这套架构盯的是 agent 体验里最要命的细节：第一段可见 token 什么时候来，streaming 后面吐得有多快，响应是不是真的产出了 assistant 文本，多轮上下文变长后速度还稳不稳。
 
-```json
-{
-  "benchmark": {
-    "scenarios_dir": "scenarios"
-  },
-  "scenarios": ["agent_tool_call"]
-}
+本地数据在：
+
+```text
+~/.llm-speedway/llm-speedway.db
 ```
 
-## 数据模型
+项目结构：
 
-每次请求都会生成一条原始记录：
-
-```json
-{
-  "scenario": "short_chat",
-  "model": "deepseek-v4-flash",
-  "success": true,
-  "ttft_ms": 6330.12,
-  "total_latency_ms": 7050.44,
-  "decode_tps": 219.8,
-  "finish_reason": "stop"
-}
+```text
+v1/        # 原始 Python CLI benchmark runner
+v2/        # Tauri + React + Rust 桌面应用
 ```
 
-报告只提升三个核心指标：
+## 开发
 
-- `ttft_ms` -> Start latency
-- `long_generation.decode_tps` -> Generation speed
-- `multi_turn.decode_tps` -> Multi-turn speed
+```bash
+cd v2
+npm ci
+npm run build
+npm run desktop:dev
+```
 
-`total_latency_ms` 仍然保留在原始记录里，用于调试和复现。
+Rust 校验：
 
-如果 streaming 响应没有任何可见 assistant 内容，这个样本会失败。空回答不应该拥有漂亮数字。
+```bash
+cd v2/src-tauri
+cargo check
+```
 
-## Roadmap
+## V1
 
-- Anthropic-compatible provider adapter
-- 并发 Agent load 模式
-- provider-specific streaming normalization
-- 外部 scenario 文件
-- HTML 报告导出
+第一版保留在 [`v1/`](v1/)，仍然可以作为 Python CLI benchmark runner 使用，输出 Markdown、CSV 和 JSONL。
 
-## 原则
+## License
 
-Fast token matters.
-
-如果 Agent 注定需要时间，它至少应该先开始说话。
+MIT

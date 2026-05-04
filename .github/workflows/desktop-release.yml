@@ -1,0 +1,120 @@
+name: Desktop Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag to publish, for example v0.2.0"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            args: "--target universal-apple-darwin --bundles dmg"
+            artifact_glob: "*.dmg"
+            release_files: "v2/src-tauri/target/**/bundle/**/*.dmg"
+          - platform: ubuntu-22.04
+            args: "--bundles deb,appimage"
+            artifact_glob: "*.deb,*.AppImage"
+            release_files: |
+              v2/src-tauri/target/**/bundle/**/*.deb
+              v2/src-tauri/target/**/bundle/**/*.AppImage
+          - platform: windows-latest
+            args: "--bundles msi,nsis"
+            artifact_glob: "*.msi,*.exe"
+            release_files: |
+              v2/src-tauri/target/**/bundle/**/*.msi
+              v2/src-tauri/target/**/bundle/**/*.exe
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: v2/package-lock.json
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Install Linux dependencies
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential curl wget file libwebkit2gtk-4.1-dev libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+
+      - name: Install frontend dependencies
+        working-directory: v2
+        run: npm ci
+
+      - name: Build desktop app
+        working-directory: v2
+        run: npm run desktop:build -- ${{ matrix.args }}
+
+      - name: Verify bundle files
+        shell: pwsh
+        run: |
+          $patterns = "${{ matrix.artifact_glob }}".Split(",")
+          $files = Get-ChildItem -Path "v2/src-tauri/target" -Recurse -File |
+            Where-Object { $_.FullName -match "[\\/]bundle[\\/]" } |
+            Where-Object {
+              $file = $_
+              $patterns | Where-Object { $file.Name -like $_ }
+            }
+
+          if (-not $files) {
+            Write-Error "No desktop bundle files were produced for ${{ matrix.platform }}."
+            exit 1
+          }
+
+          $files | ForEach-Object {
+            Write-Host "Produced bundle: $($_.FullName)"
+          }
+
+      - name: Upload workflow artifact copy
+        uses: actions/upload-artifact@v4
+        with:
+          name: llm-speedway-${{ matrix.platform }}
+          path: ${{ matrix.release_files }}
+          if-no-files-found: error
+
+      - name: Upload files to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+          name: "llm-speedway ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}"
+          body: |
+            Desktop release for llm-speedway.
+
+            Download the installer for your operating system:
+            - Windows: `.msi` or `.exe`
+            - macOS: `.dmg`
+            - Linux: `.AppImage` or `.deb`
+
+            If this release has no asset for your platform, install from source:
+
+            ```bash
+            git clone https://github.com/YuXiang-ZhuanSun/llm-speedway.git
+            cd llm-speedway/v2
+            npm ci
+            npm run desktop:dev
+            ```
+          files: ${{ matrix.release_files }}
+          fail_on_unmatched_files: true

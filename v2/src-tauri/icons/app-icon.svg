@@ -1,0 +1,16 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">llm-speedway app icon</title>
+  <desc id="desc">A speedway track and fast token marker.</desc>
+  <rect width="1024" height="1024" rx="224" fill="#F8FAFC"/>
+  <path d="M236 634C346 482 510 436 632 516C736 584 810 536 866 434" stroke="#CBD5E1" stroke-width="88" stroke-linecap="round"/>
+  <path d="M236 634C346 482 510 436 632 516C736 584 810 536 866 434" stroke="#0F172A" stroke-width="24" stroke-linecap="round"/>
+  <path d="M262 650C376 548 500 538 616 604C724 665 834 610 900 516" stroke="#2563EB" stroke-width="34" stroke-linecap="round"/>
+  <path d="M212 646H104" stroke="#94A3B8" stroke-width="46" stroke-linecap="round"/>
+  <path d="M196 560H68" stroke="#CBD5E1" stroke-width="46" stroke-linecap="round"/>
+  <path d="M212 734H128" stroke="#CBD5E1" stroke-width="46" stroke-linecap="round"/>
+  <circle cx="264" cy="642" r="72" fill="#2563EB"/>
+  <circle cx="264" cy="642" r="30" fill="white"/>
+  <path d="M712 350L856 318L798 458L766 398L712 350Z" fill="#0F172A"/>
+  <text x="142" y="270" fill="#0F172A" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="128" font-weight="800">llm</text>
+  <text x="142" y="360" fill="#475569" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="58" font-weight="700">speedway</text>
+</svg>

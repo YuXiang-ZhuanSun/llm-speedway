@@ -6,3 +6,15 @@ __pycache__/
 .venv/
 venv/
 config.json
+
+# Node / frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+vite-dev*.log
+backend-dev*.log
+tauri-dev*.log
+
+# Tauri / Rust
+target/

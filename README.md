@@ -1,7 +1,3 @@
-<p align="left">
-  <a href="README.zh-CN.md">中文</a>
-</p>
-
 <p align="center">
   <img src="v1/assets/logo.svg" alt="llm-speedway logo" width="560">
 </p>
@@ -19,6 +15,8 @@
 **Benchmark LLM API latency, throughput, and multi-turn responsiveness.**
 
 <p>
+  <a href="README.zh-CN.md">中文</a>
+  |
   <a href="v1/results/README.md">Benchmarks</a>
   |
   <a href="v1/docs/source-walkthrough.zh-CN.md">Source Walkthrough</a>

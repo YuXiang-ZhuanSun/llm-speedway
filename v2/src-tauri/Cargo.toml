@@ -1,6 +1,6 @@
 [package]
 name = "llm-speedway"
-version = "0.2.0"
+version = "0.2.1"
 description = "Cross-platform LLM API speed benchmark desktop app"
 authors = ["llm-speedway contributors"]
 edition = "2021"

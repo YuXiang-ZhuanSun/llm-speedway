@@ -15,7 +15,7 @@
 **Benchmark LLM API latency, throughput, and multi-turn responsiveness.**
 
 <p>
-  <a href="README.zh-CN.md">中文</a>
+  <a href="README.zh-CN.md">中文Readme</a>
   |
   <a href="v1/results/README.md">Benchmarks</a>
   |

@@ -103,7 +103,7 @@ x-api-key: <API_KEY>
 anthropic-version: 2023-06-01
 ```
 
-## 架构
+## V2 技术架构
 
 ```text
 React + TypeScript UI
@@ -115,6 +115,36 @@ Rust commands
         v
 Services -> SQLite -> Speedtest HTTP streaming
 ```
+
+V2 的技术亮点是：它不是一个浏览器页面加脚本，而是一个真正的本地桌面测评应用。
+
+| 层 | 技术职责 | 为什么重要 |
+|---|---|---|
+| React + TypeScript | 桌面 UI、供应商表单、结果表格、对比视图 | 让日常测速流程清晰、可扫描、可反复操作 |
+| Tauri IPC | 连接前端 UI 和 Rust 原生命令，不需要本地 HTTP 服务 | 避免 CORS 问题，也让应用作为一个桌面产品发布 |
+| Rust commands | 暴露供应商管理、测速等 typed app actions | 给前端一个小而稳定的调用边界 |
+| Rust services | 处理供应商逻辑、真实 streaming 请求、计时采集、结果归一化 | 测真实 API 行为，不做假数据、不靠估算糊弄 |
+| SQLite | 本地保存配置、测评历史和结果 | 方便复测和对比，同时不把数据发到额外服务 |
+
+测速链路是本地原生链路：
+
+```text
+用户点击 Speedtest
+        |
+        v
+Tauri command
+        |
+        v
+Rust speedtest service
+        |
+        v
+OpenAI / Anthropic compatible streaming API
+        |
+        v
+Timing metrics -> SQLite -> UI comparison table
+```
+
+这套架构要捕捉的是 agent 工作时真正影响体感的细节：第一段可见 token 什么时候到、streaming 后续写得有多快、响应是否真的产生了 assistant 文本、多轮上下文变重后速度是否还稳定。
 
 本地数据存储在：
 
@@ -128,18 +158,6 @@ Services -> SQLite -> Speedtest HTTP streaming
 v1/        # 原 Python CLI 测评工具
 v2/        # Tauri + React + Rust 桌面应用
 ```
-
-## 发布构建
-
-桌面发布由 `.github/workflows/desktop-release.yml` 负责。
-
-推送 `v*` tag，或手动运行 workflow 并输入 release tag，会构建：
-
-- Windows: MSI 和 NSIS EXE
-- macOS: DMG
-- Linux: AppImage 和 deb 包
-
-workflow 会检查每个平台是否真的产出了安装包。如果构建结束但没有文件，会直接失败，避免发布空 release。
 
 ## 开发
 

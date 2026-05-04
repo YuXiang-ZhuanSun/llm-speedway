@@ -74,23 +74,7 @@ cd src-tauri
 cargo check
 ```
 
-## Release
-
-The release workflow is at:
-
-```text
-../.github/workflows/desktop-release.yml
-```
-
-Publishing a `v*` tag, or manually running the workflow with a release tag, builds and uploads:
-
-- Windows: MSI and NSIS EXE
-- macOS: DMG
-- Linux: AppImage and deb package
-
-The workflow also checks that bundle files exist before the job succeeds. A platform job that produces no installer fails instead of leaving an empty release behind.
-
-## Architecture
+## Technical Architecture
 
 ```text
 React + TypeScript UI
@@ -101,6 +85,34 @@ Rust commands
         |
         v
 Services -> SQLite -> Speedtest HTTP streaming
+```
+
+V2 is designed as a native desktop benchmark runner with a clear separation between UI, command boundary, service logic, and durable local storage.
+
+| Layer | Technical role | Why it matters |
+|---|---|---|
+| React + TypeScript | Desktop UI, provider forms, result panels, and comparison tables | Keeps the benchmark workflow interactive and readable |
+| Tauri IPC | Calls Rust commands directly from the WebView | Keeps the app local without running a separate HTTP server |
+| Rust commands | Defines the typed command surface for provider and speedtest actions | Makes the frontend/backend boundary explicit |
+| Rust services | Handles provider logic, streaming requests, timing capture, and metric calculation | Measures real API behavior with native networking and timing |
+| SQLite | Persists configs, runs, and benchmark history | Makes comparisons repeatable while keeping data local |
+
+Benchmark flow:
+
+```text
+Speedtest button
+      |
+      v
+Tauri command
+      |
+      v
+Rust speedtest service
+      |
+      v
+Streaming API response
+      |
+      v
+Metrics persisted to SQLite and rendered in React
 ```
 
 Local data:

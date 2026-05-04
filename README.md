@@ -110,7 +110,7 @@ x-api-key: <API_KEY>
 anthropic-version: 2023-06-01
 ```
 
-## Architecture
+## V2 Technical Architecture
 
 ```text
 React + TypeScript UI
@@ -122,6 +122,36 @@ Rust commands
         v
 Services -> SQLite -> Speedtest HTTP streaming
 ```
+
+V2 is designed as a real desktop benchmark app, not a browser page wrapped around a loose script.
+
+| Layer | Technical role | Why it matters |
+|---|---|---|
+| React + TypeScript | Builds the desktop UI, provider forms, result tables, and comparison views | Keeps the testing workflow fast to operate and easy to scan |
+| Tauri IPC | Connects the UI to native Rust commands without a local HTTP server | Avoids CORS issues and keeps the app packaged as one desktop product |
+| Rust command layer | Exposes typed app actions such as provider management and speedtests | Gives the UI a small, controlled API surface |
+| Rust services | Runs provider logic, real streaming requests, timing capture, and result normalization | Measures actual API behavior instead of mocked or estimated latency |
+| SQLite | Stores configs, benchmark history, and results locally | Makes repeated comparisons reproducible without sending data to another service |
+
+The benchmark path is intentionally native and local:
+
+```text
+User clicks Speedtest
+        |
+        v
+Tauri command
+        |
+        v
+Rust speedtest service
+        |
+        v
+OpenAI / Anthropic compatible streaming API
+        |
+        v
+Timing metrics -> SQLite -> UI comparison table
+```
+
+This architecture lets `llm-speedway` capture the details that matter for agent work: when the first visible token arrives, how fast streaming continues, whether the response produced real assistant text, and whether speed remains stable in multi-turn context.
 
 Local data is stored at:
 
@@ -135,18 +165,6 @@ Project layout:
 v1/        # Original Python CLI benchmark runner
 v2/        # Tauri + React + Rust desktop app
 ```
-
-## Release Builds
-
-Desktop releases are built by `.github/workflows/desktop-release.yml`.
-
-Publishing a `v*` tag, or manually running the workflow with a release tag, builds:
-
-- Windows: MSI and NSIS EXE
-- macOS: DMG
-- Linux: AppImage and deb package
-
-The workflow fails if a platform build finishes without producing installer files, so an empty release should not be published silently.
 
 ## Development
 

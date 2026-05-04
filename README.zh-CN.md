@@ -15,6 +15,8 @@
 **测量 LLM API 的真实体感：延迟、吞吐、多轮响应**
 
 <p>
+  <a href="README.md">English Readme</a>
+  |  
   <a href="v1/results/README.md">Benchmarks</a>
   |
   <a href="v1/docs/source-walkthrough.zh-CN.md">源码导读</a>

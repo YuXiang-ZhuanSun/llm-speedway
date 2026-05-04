@@ -1,11 +1,11 @@
-# V2 发布型桌面应用架构
+# V2 发布说明
 
-V2 的最终形态是一个可安装、可发布的 Tauri 桌面应用，而不是“本地前端 + 本地后端服务”。
+V2 的发布形态是可安装的 Tauri 桌面应用，不是“本地前端 + 本地 HTTP 后端”的开发组合。
 
 ## 运行模型
 
 ```text
-用户启动安装后的 llm-speedway
+用户启动 llm-speedway
         |
         v
 Tauri 桌面进程
@@ -14,10 +14,10 @@ Tauri 桌面进程
         |
         +-- Rust Core: commands / services / database / speedtest
         |
-        +-- 本地数据: ~/.llm-speedway/llm-speedway.db
+        +-- Local data: ~/.llm-speedway/llm-speedway.db
 ```
 
-前端不访问 `localhost:1421` 之类的本地 HTTP 服务。所有业务调用通过 Tauri IPC：
+前端通过 Tauri IPC 调用 Rust 后端：
 
 ```ts
 invoke("list_providers")
@@ -25,57 +25,60 @@ invoke("create_provider", { input })
 invoke("run_speedtest", { providerId })
 ```
 
-## 分层
+## 发布方式
 
-```text
-src/
-  components/              # UI
-  hooks/                   # 业务 hooks
-  lib/api/                 # Tauri invoke 封装
-  types.ts                 # 前端类型
-
-src-tauri/src/
-  commands/                # Tauri command API
-  services/                # 业务逻辑
-  database/                # SQLite 初始化与连接管理
-  models/                  # Rust 数据模型
-  state.rs                 # 应用级状态注入
-```
-
-## 数据
-
-- SQLite: `~/.llm-speedway/llm-speedway.db`
-- 设备级设置: 后续放入 `~/.llm-speedway/settings.json`
-- 备份: 后续放入 `~/.llm-speedway/backups/`
-
-## 发布
-
-仓库已准备 GitHub Actions 工作流：
+发布 workflow 位于：
 
 ```text
 .github/workflows/desktop-release.yml
 ```
 
-推送 `v*` tag 或手动触发 workflow 后，会在 Windows、macOS、Linux 上构建 Tauri 安装包，并创建 draft release。
+触发方式：
 
-## 当前状态
+- 推送 `v*` tag，例如 `v0.2.0`
+- 在 GitHub Actions 页面手动运行 workflow，并输入 release tag
 
-已完成：
+三平台构建目标：
 
-- V1 移入 `v1/`
-- V2 Tauri 项目骨架
-- React UI 壳
-- Tauri IPC API 封装
-- Rust commands / services / database / models 分层
-- SQLite 初始化
-- GitHub Actions 桌面端 release 工作流
+| 平台 | 构建环境 | 发布文件 |
+|---|---|---|
+| Windows | `windows-latest` | `.msi`, `.exe` |
+| macOS | `macos-latest` | `.dmg` |
+| Linux | `ubuntu-22.04` | `.AppImage`, `.deb` |
 
-待完成：
+每个平台构建后都会检查 `v2/src-tauri/target` 下是否真的存在安装包。如果没有文件，workflow 会失败，避免 GitHub Release 为空。
 
-- 真实 OpenAI-compatible streaming 测速
-- API key 加密或系统 keychain
-- 设置 JSON 原子写入
-- 导入 V1 configs
-- 结果导出 Markdown / CSV / JSONL
-- macOS 签名与公证
-- Windows 签名
+## 正式发版步骤
+
+```bash
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+然后到 GitHub Releases 页面确认：
+
+- Windows 有 `.msi` 或 `.exe`
+- macOS 有 `.dmg`
+- Linux 有 `.AppImage` 或 `.deb`
+- release 说明包含源码安装兜底方式
+
+如果需要手动补发同一个 tag，可以在 GitHub Actions 里运行 `Desktop Release`，输入相同的 release tag。
+
+## 没有 release 文件时
+
+不要让用户猜。README 必须提供源码安装方式：
+
+```bash
+git clone https://github.com/YuXiang-ZhuanSun/llm-speedway.git
+cd llm-speedway/v2
+npm ci
+npm run desktop:dev
+```
+
+本地构建安装包：
+
+```bash
+npm run desktop:build
+```
+
+本地构建需要 Node.js 20+、Rust stable 和对应系统的 Tauri 构建依赖。

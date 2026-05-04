@@ -7,11 +7,7 @@
 </p>
 
 <p align="center">
-  <strong>Agent 一沉默，时间就开始烧。</strong>
-</p>
-
-<p align="center">
-  <strong>Token 快，体验才快。</strong>
+  <strong>Token 一定要快。</strong>
 </p>
 
 # llm-speedway

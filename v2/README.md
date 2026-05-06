@@ -131,6 +131,8 @@ src-tauri/src/database/ # SQLite setup and access
 docs/                   # Product and release notes
 ```
 
+To learn how the implementation works end to end, read the Chinese source walkthrough: [`docs/how-v2-works.zh-CN.md`](docs/how-v2-works.zh-CN.md).
+
 ## V1
 
 The original CLI version is still available in [`../v1`](../v1).

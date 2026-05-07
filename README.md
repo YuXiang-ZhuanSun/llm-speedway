@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <strong>Fast tokens matter.</strong>
+  <strong>Fast token matters.</strong>
 </p>
 
 # llm-speedway
